@@ -23,8 +23,8 @@ export function BankingSummaryCard() {
   
   console.log(`[BankingSummaryCard] Data Source: ${dataSource}`);
 
-  // If no balance data, show mock data
-  const displayBalance = totalBalance === 0 && accountCount > 0 ? 1000.00 : totalBalance;
+  // Use actual cached balance data
+  const displayBalance = totalBalance;
 
   // Trigger sync when component mounts
   useEffect(() => {
@@ -105,7 +105,7 @@ export function BankingSummaryCard() {
       
       {accounts.slice(0, 3).map((account) => {
         const balance = balances.find(b => b.account_id === account.account_id);
-        const accountBalance = balance ? balance.current : (accountCount > 0 ? 1000.00 : 0);
+        const accountBalance = balance ? balance.current : 0;
         return (
           <View key={account.account_id} style={styles.accountItem}>
             <Text style={styles.accountName}>{account.display_name}</Text>
