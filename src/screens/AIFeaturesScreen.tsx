@@ -1,499 +1,675 @@
-"use client"
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, radii, spacing, shadow, fonts } from '../theme';
+import { Card, Chip, Button, SectionHeader } from '../components/ui';
+import { KPIStat } from '../components/KPIStat';
+import { BudgetProgress } from '../components/BudgetProgress';
+import { TransactionRow } from '../components/TransactionRow';
+import { InsightCard } from '../components/InsightCard';
 
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Dimensions } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
-import { GlassmorphismCard } from "../components/GlassmorphismCard"
-import { visionProColors } from "../../App"
+const aiFeatures = [
+  {
+    id: 1,
+    title: 'Smart Budgeting',
+    description: 'AI-powered budget recommendations based on your spending patterns',
+    icon: 'trending-up',
+    color: colors.iosBlue,
+    gradient: [colors.iosBlue, colors.iosPurple] as [string, string],
+  },
+  {
+    id: 2,
+    title: 'Expense Categorization',
+    description: 'Automatically categorize transactions with 95% accuracy',
+    icon: 'card',
+    color: colors.iosViolet,
+    gradient: [colors.iosViolet, colors.iosPink] as [string, string],
+  },
+  {
+    id: 3,
+    title: 'Investment Insights',
+    description: 'Get personalized investment recommendations and market analysis',
+    icon: 'analytics',
+    color: colors.iosRed,
+    gradient: [colors.iosRed, colors.iosOrange] as [string, string],
+  },
+  {
+    id: 4,
+    title: 'Fraud Detection',
+    description: 'Advanced AI algorithms detect suspicious transactions in real-time',
+    icon: 'shield-checkmark',
+    color: colors.iosYellow,
+    gradient: [colors.iosYellow, colors.iosGreen] as [string, string],
+  },
+  {
+    id: 5,
+    title: 'Predictive Analytics',
+    description: 'Forecast future expenses and cash flow with machine learning',
+    icon: 'bulb',
+    color: colors.iosLightBlue,
+    gradient: [colors.iosLightBlue, colors.iosPurple] as [string, string],
+  },
+  {
+    id: 6,
+    title: 'Smart Notifications',
+    description: 'Intelligent alerts for unusual spending and budget milestones',
+    icon: 'notifications',
+    color: colors.iosBlue,
+    gradient: [colors.iosBlue, colors.iosViolet] as [string, string],
+  },
+];
 
-const { width } = Dimensions.get("window")
+const mockChatHistory = [
+  {
+    id: 1,
+    type: 'ai',
+    message: 'Hello! I\'m your AI financial assistant. How can I help you today?',
+    timestamp: '2 minutes ago',
+  },
+  {
+    id: 2,
+    type: 'user',
+    message: 'Can you help me create a budget for next month?',
+    timestamp: '1 minute ago',
+  },
+  {
+    id: 3,
+    type: 'ai',
+    message: 'Of course! Based on your spending patterns, I recommend allocating:\n\n• 50% for essentials (rent, utilities, food)\n• 30% for discretionary spending\n• 20% for savings and investments\n\nWould you like me to create a detailed breakdown?',
+    timestamp: 'Just now',
+  },
+];
 
 export default function AIFeaturesScreen() {
-  const [activeFeature, setActiveFeature] = useState<string | null>(null)
-  const [chatMessages, setChatMessages] = useState([
-    { type: "ai", message: "Hi! I'm your AI Financial Coach. How can I help you today?" },
-    { type: "user", message: "How can I save more money this month?" },
-    {
-      type: "ai",
-      message:
-        "Based on your spending patterns, I recommend reducing dining out by 2 times per week. This could save you $120 monthly!",
-    },
-  ])
+  const [chatMessage, setChatMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState(mockChatHistory);
+
+  const sendMessage = () => {
+    if (chatMessage.trim()) {
+      const newMessage = {
+        id: chatHistory.length + 1,
+        type: 'user' as const,
+        message: chatMessage.trim(),
+        timestamp: 'Just now',
+      };
+      
+      setChatHistory([...chatHistory, newMessage]);
+      setChatMessage('');
+      
+      // Simulate AI response
+      setTimeout(() => {
+        const aiResponse = {
+          id: chatHistory.length + 2,
+          type: 'ai' as const,
+          message: 'I understand your question. Let me analyze your financial data and provide you with personalized insights. This might take a moment...',
+          timestamp: 'Just now',
+        };
+        setChatHistory(prev => [...prev, aiResponse]);
+      }, 1000);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>AI Financial Assistant</Text>
-          <Text style={styles.headerSubtitle}>Powered by advanced AI to optimize your finances</Text>
+        <Text style={styles.headerTitle}>AI Features</Text>
+        <TouchableOpacity style={styles.settingsButton}>
+          <Ionicons name="settings" size={20} color={colors.text} />
+        </TouchableOpacity>
         </View>
 
-        {/* AI Financial Coach */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("coach")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* AI Features Grid */}
+        <SectionHeader title="AI-Powered Features" />
+        <View style={styles.featuresGrid}>
+          {aiFeatures.map((feature) => (
+            <TouchableOpacity key={feature.id} style={styles.featureCard}>
                 <LinearGradient
-                  colors={[visionProColors.primary, visionProColors.lightBlue]}
-                  style={styles.featureIcon}
-                >
-                  <Ionicons name="chatbubbles" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>AI Financial Coach</Text>
-                  <Text style={styles.featureSubtitle}>Get personalized financial advice</Text>
+                colors={feature.gradient}
+                style={styles.featureGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              />
+              <View style={styles.featureContent}>
+                <View style={[styles.featureIcon, { backgroundColor: `${feature.color}20` }]}>
+                  <Ionicons name={feature.icon as any} size={24} color={feature.color} />
                 </View>
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusText}>Active</Text>
-                </View>
+                <Text style={styles.featureTitle}>{feature.title}</Text>
+                <Text style={styles.featureDescription}>{feature.description}</Text>
               </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
-              <View style={styles.chatPreview}>
-                <View style={styles.chatBubble}>
-                  <Text style={styles.chatText}>
-                    💡 Tip: You can save $120 this month by cooking at home 2 more times per week!
+        {/* AI Chat Section */}
+        <SectionHeader title="AI Financial Assistant" action="Online" />
+          
+        <View style={styles.chatContainer}>
+          <ScrollView style={styles.chatHistory} showsVerticalScrollIndicator={false}>
+            {chatHistory.map((message) => (
+              <View
+                key={message.id}
+                style={[
+                  styles.messageContainer,
+                  message.type === 'user' ? styles.userMessage : styles.aiMessage,
+                ]}
+              >
+                <View
+                  style={[
+                    styles.messageBubble,
+                    message.type === 'user' ? styles.userBubble : styles.aiBubble,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.messageText,
+                      message.type === 'user' ? styles.userMessageText : styles.aiMessageText,
+                    ]}
+                  >
+                    {message.message}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.messageTimestamp,
+                      message.type === 'user' ? styles.userTimestamp : styles.aiTimestamp,
+                    ]}
+                  >
+                    {message.timestamp}
                   </Text>
                 </View>
               </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>Chat with AI Coach</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-              </View>
-            </GlassmorphismCard>
+            ))}
+          </ScrollView>
+          
+          {/* Chat Input */}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatInputContainer}
+          >
+            <View style={styles.chatInput}>
+              <TextInput
+                style={styles.input}
+                placeholder="Ask me anything about your finances..."
+                placeholderTextColor={colors.textMuted}
+                value={chatMessage}
+                onChangeText={setChatMessage}
+                multiline
+              />
+              <TouchableOpacity
+                style={[
+                  styles.sendButton,
+                  { backgroundColor: chatMessage.trim() ? colors.iosBlue : 'rgba(0, 0, 0, 0.2)' },
+                ]}
+                onPress={sendMessage}
+                disabled={!chatMessage.trim()}
+              >
+                <Ionicons
+                  name="send"
+                  size={16}
+                  color={chatMessage.trim() ? '#FFFFFF' : colors.textMuted}
+                />
           </TouchableOpacity>
         </View>
-
-        {/* Predictive Cash Flow */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("cashflow")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient colors={[visionProColors.purple, visionProColors.violet]} style={styles.featureIcon}>
-                  <Ionicons name="analytics" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Predictive Cash Flow</Text>
-                  <Text style={styles.featureSubtitle}>AI-powered spending predictions</Text>
-                </View>
-                <View style={[styles.statusBadge, styles.warningBadge]}>
-                  <Text style={styles.statusText}>Alert</Text>
-                </View>
-              </View>
-
-              <View style={styles.predictionContainer}>
-                <View style={styles.predictionItem}>
-                  <Text style={styles.predictionLabel}>Next Week</Text>
-                  <Text style={styles.predictionValue}>$340 spending predicted</Text>
-                </View>
-                <View style={styles.predictionItem}>
-                  <Text style={styles.predictionLabel}>Month End</Text>
-                  <Text style={[styles.predictionValue, styles.warningText]}>Low balance warning</Text>
-                </View>
-              </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>View Full Forecast</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-              </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+          </KeyboardAvoidingView>
         </View>
 
-        {/* Receipt Scanner */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("scanner")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient colors={[visionProColors.green, visionProColors.yellow]} style={styles.featureIcon}>
-                  <Ionicons name="camera" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Smart Receipt Scanner</Text>
-                  <Text style={styles.featureSubtitle}>AI expense categorization</Text>
-                </View>
-                <TouchableOpacity style={styles.scanButton}>
-                  <Ionicons name="camera" size={16} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.scannerPreview}>
-                <View style={styles.recentScan}>
-                  <Ionicons name="receipt" size={16} color={visionProColors.green} />
-                  <Text style={styles.scanText}>Starbucks - $5.67 (Food & Dining)</Text>
-                </View>
-                <View style={styles.recentScan}>
-                  <Ionicons name="receipt" size={16} color={visionProColors.purple} />
-                  <Text style={styles.scanText}>Uber - $12.34 (Transportation)</Text>
-                </View>
-              </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>Scan New Receipt</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-              </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+        {/* AI Insights */}
+        <SectionHeader title="AI Insights" />
+        
+        <View style={styles.insightsContainer}>
+          <InsightCard
+            title="Spending Pattern Detected"
+            body="Your entertainment spending is 25% higher than last month. Consider setting a budget limit."
+            tone="blue"
+          />
+          
+          <InsightCard
+            title="Investment Opportunity"
+            body="Based on your savings rate, you could invest $500/month for 8% annual returns."
+            tone="green"
+          />
+          
+          <InsightCard
+            title="Fraud Alert"
+            body="Unusual transaction detected in your account. Review recent activity."
+            tone="blue"
+          />
         </View>
 
-        {/* Bill Optimization */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("bills")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient colors={[visionProColors.orange, visionProColors.red]} style={styles.featureIcon}>
-                  <Ionicons name="receipt" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Bill Optimization</Text>
-                  <Text style={styles.featureSubtitle}>Find better deals automatically</Text>
-                </View>
-                <View style={[styles.statusBadge, styles.successBadge]}>
-                  <Text style={styles.statusText}>Saved $45</Text>
-                </View>
-              </View>
-
-              <View style={styles.billsContainer}>
-                <View style={styles.billItem}>
-                  <Text style={styles.billName}>Netflix</Text>
-                  <Text style={styles.billAmount}>$15.99/mo</Text>
-                  <Text style={styles.billStatus}>✓ Optimized</Text>
-                </View>
-                <View style={styles.billItem}>
-                  <Text style={styles.billName}>Phone Plan</Text>
-                  <Text style={styles.billAmount}>$65.00/mo</Text>
-                  <Text style={[styles.billStatus, styles.warningText]}>⚠ Can save $20</Text>
-                </View>
-              </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>Optimize All Bills</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-              </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+        {/* AI-Detected Transactions */}
+        <SectionHeader title="AI-Detected Transactions" />
+        
+        <View style={styles.aiTransactionsContainer}>
+          <TransactionRow
+            name="Starbucks Coffee"
+            time="2 hours ago"
+            amount="-$12.50"
+            positive={false}
+          />
+          <TransactionRow
+            name="Salary Deposit"
+            time="1 day ago"
+            amount="+$3,500.00"
+            positive={true}
+          />
+          <TransactionRow
+            name="Netflix Subscription"
+            time="2 days ago"
+            amount="-$15.99"
+            positive={false}
+          />
+          <TransactionRow
+            name="Freelance Payment"
+            time="3 days ago"
+            amount="+$800.00"
+            positive={true}
+          />
         </View>
 
-        {/* Behavioral Insights */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("insights")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient colors={[visionProColors.magenta, visionProColors.pink]} style={styles.featureIcon}>
-                  <Ionicons name="psychology" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Behavioral Insights</Text>
-                  <Text style={styles.featureSubtitle}>Understand your spending psychology</Text>
-                </View>
+        {/* AI Budget Insights */}
+        <SectionHeader title="AI Budget Insights" />
+        
+        <View style={styles.budgetInsightsContainer}>
+          <Card style={styles.budgetInsightCard}>
+            <View style={styles.budgetInsightHeader}>
+              <View style={[styles.budgetInsightIcon, { backgroundColor: `${colors.iosBlue}20` }]}>
+                <Ionicons name="trending-up" size={20} color={colors.iosBlue} />
               </View>
-
-              <View style={styles.insightsContainer}>
-                <View style={styles.insightItem}>
-                  <Text style={styles.insightLabel}>Spending Trigger</Text>
-                  <Text style={styles.insightValue}>Weekend evenings</Text>
-                </View>
-                <View style={styles.insightItem}>
-                  <Text style={styles.insightLabel}>Mood Impact</Text>
-                  <Text style={styles.insightValue}>+23% when stressed</Text>
-                </View>
+              <Text style={styles.budgetInsightTitle}>Monthly Budget</Text>
+            </View>
+            <BudgetProgress spent={2800} limit={4000} />
+          </Card>
+          
+          <Card style={styles.budgetInsightCard}>
+            <View style={styles.budgetInsightHeader}>
+              <View style={[styles.budgetInsightIcon, { backgroundColor: `${colors.iosGreen}20` }]}>
+                <Ionicons name="wallet" size={20} color={colors.iosGreen} />
               </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>View Full Analysis</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
+              <Text style={styles.budgetInsightTitle}>Savings Goal</Text>
               </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+            <BudgetProgress spent={1200} limit={2000} />
+          </Card>
         </View>
 
-        {/* Investment Opportunities */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("investments")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient colors={[visionProColors.violet, visionProColors.magenta]} style={styles.featureIcon}>
-                  <Ionicons name="trending-up" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Investment Opportunities</Text>
-                  <Text style={styles.featureSubtitle}>AI-powered market analysis</Text>
-                </View>
-                <View style={[styles.statusBadge, styles.successBadge]}>
-                  <Text style={styles.statusText}>3 New</Text>
-                </View>
+        {/* AI Insights Overview */}
+        <SectionHeader title="AI Insights Overview" />
+        
+        <View style={styles.insightsGrid}>
+          <Card style={styles.insightCard}>
+            <View style={styles.insightHeader}>
+              <View style={[styles.insightIcon, { backgroundColor: `${colors.iosBlue}20` }]}>
+                <Ionicons name="trending-up" size={20} color={colors.iosBlue} />
               </View>
-
-              <View style={styles.investmentContainer}>
-                <View style={styles.investmentItem}>
-                  <Text style={styles.investmentName}>Tech Growth ETF</Text>
-                  <Text style={styles.investmentReturn}>+12.5% potential</Text>
+              <Text style={styles.insightTitle}>Spending Trend</Text>
                 </View>
-                <View style={styles.investmentItem}>
-                  <Text style={styles.investmentName}>Green Energy Fund</Text>
-                  <Text style={styles.investmentReturn}>+8.3% potential</Text>
-                </View>
+            <KPIStat 
+              label="This Month vs Last"
+              value="+12.5%"
+              delta="Improving"
+              deltaPositive={true}
+            />
+          </Card>
+          
+          <Card style={styles.insightCard}>
+            <View style={styles.insightHeader}>
+              <View style={[styles.insightIcon, { backgroundColor: `${colors.iosGreen}20` }]}>
+                <Ionicons name="wallet" size={20} color={colors.iosGreen} />
               </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>Explore Opportunities</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-              </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+              <Text style={styles.insightTitle}>Savings Rate</Text>
         </View>
-
-        {/* Purchase Impact Analyzer */}
-        <View style={styles.section}>
-          <TouchableOpacity onPress={() => setActiveFeature("purchase")}>
-            <GlassmorphismCard style={styles.featureCard}>
-              <View style={styles.featureHeader}>
-                <LinearGradient
-                  colors={[visionProColors.lightBlue, visionProColors.primary]}
-                  style={styles.featureIcon}
-                >
-                  <Ionicons name="calculator" size={24} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.featureInfo}>
-                  <Text style={styles.featureTitle}>Purchase Impact Analyzer</Text>
-                  <Text style={styles.featureSubtitle}>See how purchases affect your budget</Text>
-                </View>
-                <TouchableOpacity style={styles.scanButton}>
-                  <Ionicons name="add" size={16} color="#FFFFFF" />
-                </TouchableOpacity>
+            <KPIStat 
+              label="Monthly Goal Progress"
+              value="78%"
+              delta="On Track"
+              deltaPositive={true}
+            />
+          </Card>
+          
+          <Card style={styles.insightCard}>
+            <View style={styles.insightHeader}>
+              <View style={[styles.insightIcon, { backgroundColor: `${colors.iosPurple}20` }]}>
+                <Ionicons name="bulb" size={20} color={colors.iosPurple} />
               </View>
-
-              <View style={styles.purchasePreview}>
-                <Text style={styles.purchaseText}>Last Analysis: iPhone 15 Pro</Text>
-                <Text style={styles.purchaseImpact}>Impact: 23% of monthly budget</Text>
+              <Text style={styles.insightTitle}>AI Score</Text>
+            </View>
+            <KPIStat 
+              label="Financial Health"
+              value="A+"
+              delta="Excellent"
+              deltaPositive={true}
+            />
+          </Card>
+          
+          <Card style={styles.insightCard}>
+            <View style={styles.insightHeader}>
+              <View style={[styles.insightIcon, { backgroundColor: `${colors.iosOrange}20` }]}>
+                <Ionicons name="flash" size={20} color={colors.iosOrange} />
               </View>
-
-              <View style={styles.featureFooter}>
-                <Text style={styles.featureAction}>Analyze New Purchase</Text>
-                <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
+              <Text style={styles.insightTitle}>Risk Level</Text>
               </View>
-            </GlassmorphismCard>
-          </TouchableOpacity>
+            <KPIStat 
+              label="Investment Profile"
+              value="Low"
+              delta="Conservative"
+              deltaPositive={true}
+            />
+          </Card>
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.bg,
+  },
+  scrollView: {
+    flex: 1,
   },
   header: {
-    padding: 24,
-    paddingBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: '#FFFFFF',
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#FFFFFF",
-    marginBottom: 8,
+    ...fonts.title,
+    fontSize: 24,
+    fontWeight: 'bold',
   },
-  headerSubtitle: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.7)",
+  settingsButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   section: {
-    marginHorizontal: 16,
-    marginBottom: 16,
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
+  },
+  sectionTitle: {
+    ...fonts.h2,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    ...fonts.body,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  aiStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.iosGreen,
+  },
+  statusText: {
+    fontSize: 12,
+    color: colors.iosGreen,
+    fontWeight: '500',
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    justifyContent: 'space-between',
   },
   featureCard: {
-    borderWidth: 1,
-    borderColor: "rgba(255, 255, 255, 0.1)",
+    width: '48%',
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    ...shadow.card,
   },
-  featureHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
+  featureGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.15,
+  },
+  featureContent: {
+    padding: spacing.md,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   featureIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  featureInfo: {
-    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   featureTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 4,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
   },
-  featureSubtitle: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
-  },
-  statusBadge: {
-    backgroundColor: `${visionProColors.primary}20`,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: `${visionProColors.primary}40`,
-  },
-  warningBadge: {
-    backgroundColor: `${visionProColors.orange}20`,
-    borderColor: `${visionProColors.orange}40`,
-  },
-  successBadge: {
-    backgroundColor: `${visionProColors.green}20`,
-    borderColor: `${visionProColors.green}40`,
-  },
-  statusText: {
+  featureDescription: {
     fontSize: 12,
-    fontWeight: "500",
-    color: "#FFFFFF",
+    color: colors.textMuted,
+    lineHeight: 16,
   },
-  scanButton: {
+  chatContainer: {
+    borderRadius: radii.lg,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    ...shadow.card,
+  },
+  chatHistory: {
+    maxHeight: 300,
+    padding: spacing.md,
+    backgroundColor: 'rgba(0, 0, 0, 0.02)',
+  },
+  messageContainer: {
+    marginBottom: spacing.md,
+  },
+  userMessage: {
+    alignItems: 'flex-end',
+  },
+  aiMessage: {
+    alignItems: 'flex-start',
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    padding: spacing.sm,
+    borderRadius: radii.lg,
+  },
+  userBubble: {
+    backgroundColor: colors.iosBlue,
+    borderBottomRightRadius: 4,
+  },
+  aiBubble: {
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderBottomLeftRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: spacing.xs,
+  },
+  userMessageText: {
+    color: '#FFFFFF',
+  },
+  aiMessageText: {
+    color: colors.text,
+  },
+  messageTimestamp: {
+    fontSize: 10,
+  },
+  userTimestamp: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    textAlign: 'right',
+  },
+  aiTimestamp: {
+    color: colors.textMuted,
+  },
+  chatInputContainer: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: '#FFFFFF',
+  },
+  chatInput: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderRadius: 20,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: 14,
+    color: colors.text,
+    maxHeight: 100,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sendButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  budgetInsightsContainer: {
+    gap: spacing.md,
+  },
+  budgetInsightCard: {
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    ...shadow.card,
+  },
+  budgetInsightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  budgetInsightIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: `${visionProColors.primary}40`,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  chatPreview: {
-    marginBottom: 16,
-  },
-  chatBubble: {
-    backgroundColor: `${visionProColors.primary}20`,
-    padding: 12,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: `${visionProColors.primary}30`,
-  },
-  chatText: {
+  budgetInsightTitle: {
     fontSize: 14,
-    color: "#FFFFFF",
-    lineHeight: 20,
-  },
-  predictionContainer: {
-    marginBottom: 16,
-  },
-  predictionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  predictionLabel: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
-  },
-  predictionValue: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#FFFFFF",
-  },
-  warningText: {
-    color: visionProColors.orange,
-  },
-  scannerPreview: {
-    marginBottom: 16,
-  },
-  recentScan: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 6,
-  },
-  scanText: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginLeft: 8,
-  },
-  billsContainer: {
-    marginBottom: 16,
-  },
-  billItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  billName: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    flex: 1,
-  },
-  billAmount: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "rgba(255, 255, 255, 0.8)",
-    marginHorizontal: 12,
-  },
-  billStatus: {
-    fontSize: 12,
-    color: visionProColors.green,
+    fontWeight: '600',
+    color: colors.text,
   },
   insightsContainer: {
-    marginBottom: 16,
+    gap: spacing.md,
   },
-  insightItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
+  insightContent: {
+    flex: 1,
   },
-  insightLabel: {
+  insightTitle: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: '600',
+    color: colors.text,
+    flex: 1,
   },
-  insightValue: {
+  insightText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#FFFFFF",
+    color: colors.textMuted,
+    lineHeight: 20,
+    marginBottom: spacing.sm,
   },
-  investmentContainer: {
-    marginBottom: 16,
+  insightButton: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.08)',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  investmentItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 8,
-  },
-  investmentName: {
-    fontSize: 14,
-    color: "#FFFFFF",
-  },
-  investmentReturn: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: visionProColors.green,
-  },
-  purchasePreview: {
-    marginBottom: 16,
-  },
-  purchaseText: {
-    fontSize: 14,
-    color: "#FFFFFF",
-    marginBottom: 4,
-  },
-  purchaseImpact: {
+  insightButtonText: {
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: '500',
   },
-  featureFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  insightsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+    justifyContent: 'space-between',
   },
-  featureAction: {
-    fontSize: 14,
-    color: visionProColors.primary,
-    fontWeight: "500",
+  insightCard: {
+    width: '48%',
+    borderRadius: radii.lg,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: colors.border,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    ...shadow.card,
   },
-})
+  insightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+    gap: spacing.xs,
+  },
+  insightIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  aiTransactionsContainer: {
+    gap: spacing.md,
+  },
+});

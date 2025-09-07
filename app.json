@@ -1,39 +1,53 @@
 {
   "expo": {
-    "name": "FinTech Pro",
-    "slug": "fintech-pro",
+    "name": "Aureon",
+    "slug": "aureon-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "dark",
+    "icon": "./public/placeholder-logo.png",
+    "userInterfaceStyle": "light",
+    "scheme": "aureonmobile",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./public/placeholder-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#000000"
+      "backgroundColor": "#FFFFFF"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": false,
-      "bundleIdentifier": "com.fintechpro.app",
-      "buildNumber": "1",
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aureon.mobile",
       "infoPlist": {
-        "NSFaceIDUsageDescription": "Use Face ID to securely access your financial data",
-        "NSCameraUsageDescription": "Camera access is needed to scan receipts and QR codes",
-        "NSPhotoLibraryUsageDescription": "Photo library access is needed to upload receipt images"
+        "NSCameraUsageDescription": "This app uses the camera to take photos for your savings pots and financial goals.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select images for your savings pots and financial goals."
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#000000"
+        "foregroundImage": "./public/placeholder-logo.png",
+        "backgroundColor": "#FFFFFF"
       },
-      "package": "com.fintechpro.app",
-      "versionCode": 1,
-      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "USE_FINGERPRINT", "USE_BIOMETRIC"]
+      "package": "com.aureon.mobile",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./public/placeholder-logo.png"
     },
-    "plugins": ["expo-camera", "expo-image-picker", "expo-local-authentication"]
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "This app accesses your photo library to select images for your savings pots and financial goals.",
+          "cameraPermission": "This app uses the camera to take photos for your savings pots and financial goals."
+        }
+      ],
+      "expo-font"
+    ],
+    "sdkVersion": "53.0.0"
   }
 }

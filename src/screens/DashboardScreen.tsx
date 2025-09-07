@@ -1,517 +1,529 @@
-"use client"
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  StatusBar,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { PieChart } from 'react-native-chart-kit';
+import { colors, radii, spacing, shadow, fonts } from '../theme';
+import { Card, Chip, SectionHeader } from '../components/ui';
+import { KPIStat } from '../components/KPIStat';
+import { BudgetProgress } from '../components/BudgetProgress';
+import { TransactionRow } from '../components/TransactionRow';
+import { InsightCard } from '../components/InsightCard';
 
-import { ScrollView, View, Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
-import { LinearGradient } from "expo-linear-gradient"
-import { Ionicons } from "@expo/vector-icons"
-import { useState } from "react"
-import { AnimatedCard } from "../components/AnimatedCard"
-import { PullToRefresh } from "../components/PullToRefresh"
-import { SpendingChart } from "../components/SpendingChart"
-import { visionProColors } from "../../App"
+// Import components
+import PurchaseImpactAnalyzer from '../../components/PurchaseImpactAnalyzer';
 
-const { width } = Dimensions.get("window")
+const { width } = Dimensions.get('window');
+
+const spendingData = [
+  { name: 'Food & Dining', value: 850, color: colors.iosBlue },
+  { name: 'Transportation', value: 420, color: colors.iosPurple },
+  { name: 'Shopping', value: 680, color: colors.iosViolet },
+  { name: 'Entertainment', value: 320, color: colors.iosPink },
+  { name: 'Bills & Utilities', value: 1200, color: colors.iosRed },
+];
+
+const recentTransactions = [
+  { id: 1, description: 'Starbucks Coffee', amount: -12.5, category: 'Food & Dining', date: '2 hours ago' },
+  { id: 2, description: 'Salary Deposit', amount: 3500.0, category: 'Income', date: '1 day ago' },
+  { id: 3, description: 'Netflix Subscription', amount: -15.99, category: 'Entertainment', date: '2 days ago' },
+  { id: 4, description: 'Uber Ride', amount: -18.75, category: 'Transportation', date: '3 days ago' },
+];
 
 export default function DashboardScreen() {
-  const [refreshing, setRefreshing] = useState(false)
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  const onRefresh = () => {
-    setRefreshing(true)
-    // Simulate API call
-    setTimeout(() => {
-      setRefreshing(false)
-    }, 2000)
-  }
+  const totalSpent = spendingData.reduce((sum, item) => sum + item.value, 0);
+  const monthlyBudget = 4000;
+  const remainingBudget = monthlyBudget - totalSpent;
+  const budgetProgress = (totalSpent / monthlyBudget) * 100;
+
+  const chartData = spendingData.map((item, index) => ({
+    name: item.name,
+    population: item.value,
+    color: item.color,
+    legendFontColor: colors.text,
+    legendFontSize: 12,
+  }));
+
+  const chartConfig = {
+    backgroundGradientFrom: colors.bg,
+    backgroundGradientTo: colors.bg,
+    color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
+    strokeWidth: 2,
+    barPercentage: 0.5,
+    useShadowColorFromDataset: false,
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        refreshControl={<PullToRefresh refreshing={refreshing} onRefresh={onRefresh} />}
-      >
-        {/* Hero Section */}
-        <LinearGradient colors={[visionProColors.primary, visionProColors.purple]} style={styles.heroSection}>
-          <View style={styles.heroHeader}>
-            <View>
-              <Text style={styles.heroGreeting}>Good morning</Text>
-              <Text style={styles.heroName}>Alex Johnson</Text>
-            </View>
-            <TouchableOpacity style={styles.notificationButton}>
-              <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
+      <StatusBar barStyle="dark-content" />
+      
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={[styles.logoContainer, { backgroundColor: `${colors.iosBlue}20` }]}>
+            <Ionicons name="wallet" size={20} color={colors.iosBlue} />
           </View>
+          <Text style={styles.logoText}>Aureon</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="notifications" size={20} color={colors.text} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="menu" size={20} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-          <View style={styles.balanceContainer}>
-            <Text style={styles.balanceLabel}>Total Balance</Text>
-            <Text style={styles.balanceAmount}>$12,847.32</Text>
-            <View style={styles.balanceChange}>
-              <Ionicons name="trending-up" size={16} color={visionProColors.green} />
-              <Text style={styles.balanceChangeText}>+2.5% from last month</Text>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Welcome Section */}
+        <Card style={styles.welcomeSection}>
+          <LinearGradient
+            colors={[`${colors.iosBlue}20`, `${colors.iosPurple}20`, `${colors.iosViolet}20`]}
+            style={styles.welcomeGradient}
+          />
+          <View style={styles.welcomeContent}>
+            <Text style={styles.welcomeTitle}>Welcome back, Alex!</Text>
+            <Text style={styles.welcomeSubtitle}>Your financial overview for May 2024</Text>
+            
+            {/* Total Balance */}
+            <View style={styles.balanceContainer}>
+              <View style={[styles.balanceIcon, { backgroundColor: `${colors.iosBlue}15` }]}>
+                <Ionicons name="cash" size={24} color={colors.iosBlue} />
+              </View>
+              <KPIStat 
+                label="Total Balance"
+                value="$12,450"
+                delta="+2.5%"
+                deltaPositive={true}
+              />
+            </View>
+
+            {/* Spending and Savings */}
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <View style={[styles.statIcon, { backgroundColor: `${colors.iosRed}15` }]}>
+                  <Ionicons name="card" size={20} color={colors.iosRed} />
+                </View>
+                <KPIStat 
+                  label="Monthly Spending"
+                  value={`$${totalSpent.toLocaleString()}`}
+                  delta="+8.2%"
+                  deltaPositive={false}
+                />
+              </View>
+              <View style={styles.statItem}>
+                <View style={[styles.statIcon, { backgroundColor: `${colors.iosGreen}15` }]}>
+                  <Ionicons name="wallet" size={20} color={colors.iosGreen} />
+                </View>
+                <KPIStat 
+                  label="Savings Goal"
+                  value="$8,200"
+                  delta="+15.3%"
+                  deltaPositive={true}
+                />
+              </View>
             </View>
           </View>
+        </Card>
 
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Ionicons name="card-outline" size={20} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.statValue}>$2,340</Text>
-              <Text style={styles.statLabel}>Spent</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="wallet-outline" size={20} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.statValue}>$890</Text>
-              <Text style={styles.statLabel}>Remaining</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Ionicons name="trending-up-outline" size={20} color="rgba(255, 255, 255, 0.8)" />
-              <Text style={styles.statValue}>$1,200</Text>
-              <Text style={styles.statLabel}>Invested</Text>
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* Quick Actions */}
+        {/* Spending Breakdown */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Actions</Text>
-          <View style={styles.quickActions}>
-            <AnimatedCard style={styles.actionCard} hapticType="medium">
-              <LinearGradient colors={[visionProColors.primary, visionProColors.lightBlue]} style={styles.actionIcon}>
-                <Ionicons name="send" size={24} color="#FFFFFF" />
-              </LinearGradient>
-              <Text style={styles.actionTitle}>Send</Text>
-              <Text style={styles.actionSubtitle}>Transfer money</Text>
-            </AnimatedCard>
+          <Text style={styles.sectionTitle}>Spending Breakdown</Text>
+          <Text style={styles.sectionSubtitle}>Your spending across different categories</Text>
+          
+          {/* Pie Chart */}
+          <View style={styles.chartContainer}>
+            <PieChart
+              data={chartData}
+              width={width - 40}
+              height={200}
+              chartConfig={chartConfig}
+              accessor="population"
+              backgroundColor="transparent"
+              paddingLeft="15"
+              absolute
+            />
+            <View style={styles.chartCenter}>
+              <KPIStat 
+                label="Total Spent"
+                value={`$${totalSpent.toLocaleString()}`}
+                delta={`${budgetProgress.toFixed(1)}% of budget`}
+                deltaPositive={budgetProgress < 80}
+              />
+            </View>
+          </View>
 
-            <AnimatedCard style={styles.actionCard} hapticType="medium">
-              <LinearGradient colors={[visionProColors.purple, visionProColors.violet]} style={styles.actionIcon}>
-                <Ionicons name="card" size={24} color="#FFFFFF" />
-              </LinearGradient>
-              <Text style={styles.actionTitle}>Pay</Text>
-              <Text style={styles.actionSubtitle}>Bills & services</Text>
-            </AnimatedCard>
+          {/* Budget Progress */}
+          <BudgetProgress spent={totalSpent} limit={monthlyBudget} />
 
-            <AnimatedCard style={styles.actionCard} hapticType="medium">
-              <LinearGradient colors={[visionProColors.green, visionProColors.yellow]} style={styles.actionIcon}>
-                <Ionicons name="trending-up" size={24} color="#FFFFFF" />
-              </LinearGradient>
-              <Text style={styles.actionTitle}>Invest</Text>
-              <Text style={styles.actionSubtitle}>Grow wealth</Text>
-            </AnimatedCard>
-
-            <AnimatedCard style={styles.actionCard} hapticType="medium">
-              <LinearGradient colors={[visionProColors.orange, visionProColors.red]} style={styles.actionIcon}>
-                <Ionicons name="camera" size={24} color="#FFFFFF" />
-              </LinearGradient>
-              <Text style={styles.actionTitle}>Scan</Text>
-              <Text style={styles.actionSubtitle}>Receipt & QR</Text>
-            </AnimatedCard>
+          {/* Category Breakdown */}
+          <View style={styles.categoriesContainer}>
+            {spendingData.map((item, index) => (
+              <Card key={index} style={styles.categoryItem}>
+                <View style={styles.categoryLeft}>
+                  <View style={[styles.categoryDot, { backgroundColor: item.color }]} />
+                  <Text style={styles.categoryName}>{item.name}</Text>
+                </View>
+                <Text style={styles.categoryAmount}>${item.value}</Text>
+              </Card>
+            ))}
           </View>
         </View>
 
-        {/* Spending Overview */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Spending Overview</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllButton}>See All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <AnimatedCard hapticType="light">
-            <SpendingChart />
-            <View style={styles.spendingList}>
-              <View style={styles.spendingItem}>
-                <View style={styles.spendingCategory}>
-                  <LinearGradient
-                    colors={[visionProColors.primary, visionProColors.lightBlue]}
-                    style={styles.categoryIcon}
-                  >
-                    <Ionicons name="restaurant" size={16} color="#FFFFFF" />
-                  </LinearGradient>
-                  <View>
-                    <Text style={styles.categoryName}>Food & Dining</Text>
-                    <Text style={styles.categoryPercentage}>32% of budget</Text>
-                  </View>
-                </View>
-                <Text style={styles.spendingAmount}>$456.78</Text>
-              </View>
-
-              <View style={styles.spendingItem}>
-                <View style={styles.spendingCategory}>
-                  <LinearGradient colors={[visionProColors.purple, visionProColors.violet]} style={styles.categoryIcon}>
-                    <Ionicons name="car" size={16} color="#FFFFFF" />
-                  </LinearGradient>
-                  <View>
-                    <Text style={styles.categoryName}>Transportation</Text>
-                    <Text style={styles.categoryPercentage}>18% of budget</Text>
-                  </View>
-                </View>
-                <Text style={styles.spendingAmount}>$234.50</Text>
-              </View>
-
-              <View style={styles.spendingItem}>
-                <View style={styles.spendingCategory}>
-                  <LinearGradient colors={[visionProColors.green, visionProColors.yellow]} style={styles.categoryIcon}>
-                    <Ionicons name="bag" size={16} color="#FFFFFF" />
-                  </LinearGradient>
-                  <View>
-                    <Text style={styles.categoryName}>Shopping</Text>
-                    <Text style={styles.categoryPercentage}>15% of budget</Text>
-                  </View>
-                </View>
-                <Text style={styles.spendingAmount}>$189.23</Text>
-              </View>
-            </View>
-          </AnimatedCard>
+        {/* Recent Activity */}
+        <SectionHeader title="Recent Activity" action="View All" onPress={() => console.log('View all transactions')} />
+        
+        <View style={styles.transactionsContainer}>
+          {recentTransactions.slice(0, 4).map((transaction) => (
+            <TransactionRow
+              key={transaction.id}
+              name={transaction.description}
+              time={transaction.date}
+              amount={`${transaction.amount > 0 ? '+' : ''}$${Math.abs(transaction.amount).toFixed(2)}`}
+              positive={transaction.amount > 0}
+            />
+          ))}
         </View>
 
-        {/* Recent Transactions */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Recent Transactions</Text>
-            <TouchableOpacity>
-              <Text style={styles.seeAllButton}>View All</Text>
-            </TouchableOpacity>
-          </View>
-
-          <AnimatedCard hapticType="light">
-            <TouchableOpacity style={styles.transactionItem}>
-              <View style={styles.transactionLeft}>
-                <LinearGradient colors={[visionProColors.green, visionProColors.yellow]} style={styles.merchantIcon}>
-                  <Ionicons name="cafe" size={20} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionTitle}>Starbucks Coffee</Text>
-                  <Text style={styles.transactionDate}>Today, 2:30 PM</Text>
-                  <Text style={styles.transactionCategory}>Food & Dining</Text>
-                </View>
-              </View>
-              <View style={styles.transactionRight}>
-                <Text style={styles.transactionAmount}>-$5.67</Text>
-                <View style={styles.roundUpBadge}>
-                  <Text style={styles.roundUpText}>+$0.33</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.transactionItem}>
-              <View style={styles.transactionLeft}>
-                <LinearGradient
-                  colors={[visionProColors.primary, visionProColors.lightBlue]}
-                  style={styles.merchantIcon}
-                >
-                  <Ionicons name="car" size={20} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionTitle}>Uber Ride</Text>
-                  <Text style={styles.transactionDate}>Yesterday, 6:45 PM</Text>
-                  <Text style={styles.transactionCategory}>Transportation</Text>
-                </View>
-              </View>
-              <View style={styles.transactionRight}>
-                <Text style={styles.transactionAmount}>-$12.34</Text>
-                <View style={styles.roundUpBadge}>
-                  <Text style={styles.roundUpText}>+$0.66</Text>
-                </View>
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.transactionItem}>
-              <View style={styles.transactionLeft}>
-                <LinearGradient colors={[visionProColors.purple, visionProColors.violet]} style={styles.merchantIcon}>
-                  <Ionicons name="business" size={20} color="#FFFFFF" />
-                </LinearGradient>
-                <View style={styles.transactionInfo}>
-                  <Text style={styles.transactionTitle}>Salary Deposit</Text>
-                  <Text style={styles.transactionDate}>Dec 1, 9:00 AM</Text>
-                  <Text style={styles.transactionCategory}>Income</Text>
-                </View>
-              </View>
-              <View style={styles.transactionRight}>
-                <Text style={[styles.transactionAmount, styles.positiveAmount]}>+$3,500.00</Text>
-              </View>
-            </TouchableOpacity>
-          </AnimatedCard>
+        {/* AI Insights */}
+        <SectionHeader title="AI Insights" />
+        
+        <View style={styles.insightsContainer}>
+          <InsightCard
+            title="Great Progress!"
+            body="You're 18% under budget this month."
+            tone="blue"
+          />
+          
+          <InsightCard
+            title="Savings Tip"
+            body="Save $120/month by reducing dining out by 30%."
+            tone="green"
+          />
         </View>
 
-        {/* AI Insights Preview Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>AI Insights</Text>
-          <AnimatedCard style={styles.aiInsightCard} hapticType="selection">
-            <View style={styles.aiInsightHeader}>
-              <LinearGradient colors={[visionProColors.magenta, visionProColors.pink]} style={styles.aiIcon}>
-                <Ionicons name="sparkles" size={20} color="#FFFFFF" />
-              </LinearGradient>
-              <View style={styles.aiInsightContent}>
-                <Text style={styles.aiInsightTitle}>Smart Spending Tip</Text>
-                <Text style={styles.aiInsightText}>
-                  You're spending 15% more on dining this month. Consider cooking at home 2 more times per week to save
-                  $120.
-                </Text>
-              </View>
-            </View>
-            <View style={styles.aiInsightFooter}>
-              <Text style={styles.aiInsightAction}>View All Insights</Text>
-              <Ionicons name="chevron-forward" size={16} color={visionProColors.primary} />
-            </View>
-          </AnimatedCard>
+        {/* AI-Powered Features */}
+        <SectionHeader title="AI-Powered Features" />
+
+        <View style={styles.insightsContainer}>
+          <PurchaseImpactAnalyzer />
         </View>
       </ScrollView>
     </SafeAreaView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#000000",
+    backgroundColor: colors.bg,
   },
-  heroSection: {
-    padding: 24,
-    borderRadius: 20,
-    margin: 16,
-    marginBottom: 24,
-  },
-  heroHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 24,
-  },
-  heroGreeting: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginBottom: 4,
-  },
-  heroName: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  notificationButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255, 255, 255, 0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  balanceContainer: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  balanceLabel: {
-    fontSize: 16,
-    color: "rgba(255, 255, 255, 0.8)",
-    marginBottom: 8,
-  },
-  balanceAmount: {
-    fontSize: 36,
-    fontWeight: "700",
-    color: "#FFFFFF",
-  },
-  balanceChange: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  balanceChangeText: {
-    fontSize: 14,
-    color: visionProColors.green,
-    marginLeft: 4,
-    fontWeight: "500",
-  },
-  statsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  statItem: {
-    alignItems: "center",
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#FFFFFF",
-  },
-  statLabel: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.7)",
-    marginTop: 4,
-  },
-  section: {
-    marginHorizontal: 16,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 16,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  seeAllButton: {
-    fontSize: 14,
-    color: visionProColors.primary,
-    fontWeight: "500",
-  },
-  quickActions: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  actionButton: {
-    width: (width - 56) / 2,
-  },
-  actionCard: {
+  scrollView: {
     flex: 1,
   },
-  actionIcon: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: '#FFFFFF',
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  logoContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.xs,
+  },
+  logoText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  iconButton: {
+    width: 32,
+    height: 32,
+    borderRadius: radii.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  welcomeSection: {
+    margin: spacing.xl,
+  },
+  welcomeGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.3,
+  },
+  welcomeContent: {
+    alignItems: 'center',
+  },
+  welcomeTitle: {
+    ...fonts.h2,
+    textAlign: 'center',
+    marginBottom: spacing.xs,
+  },
+  welcomeSubtitle: {
+    ...fonts.body,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  balanceContainer: {
+    alignItems: 'center',
+    marginBottom: spacing.xl,
+  },
+  balanceIcon: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
   },
-  actionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 4,
+  balanceAmount: {
+    ...fonts.kpi,
+    marginBottom: spacing.xs,
   },
-  actionSubtitle: {
+  balanceLabel: {
+    ...fonts.body,
+    marginBottom: spacing.xs,
+  },
+  balanceChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  balanceChangeText: {
+    fontSize: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  statAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  statLabel: {
+    ...fonts.body,
+  },
+  section: {
+    marginHorizontal: spacing.xl,
+    marginBottom: spacing.xxl,
+  },
+  sectionTitle: {
+    ...fonts.h2,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    ...fonts.body,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+  },
+  viewAllButton: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.lg,
+    backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  viewAllText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  chartContainer: {
+    position: 'relative',
+    marginBottom: spacing.xl,
+  },
+  chartCenter: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chartCenterAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  chartCenterLabel: {
+    ...fonts.body,
+  },
+  budgetProgress: {
+    marginBottom: spacing.xl,
+  },
+  budgetHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  budgetLabel: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
+    fontWeight: '600',
+    color: colors.text,
   },
-  spendingList: {
-    marginTop: 16,
+  progressBar: {
+    height: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 6,
+    marginBottom: spacing.sm,
+    overflow: 'hidden',
   },
-  spendingItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+  progressFill: {
+    height: '100%',
+    borderRadius: 6,
   },
-  spendingCategory: {
-    flexDirection: "row",
-    alignItems: "center",
+  budgetDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
-  categoryIcon: {
+  budgetDetail: {
+    ...fonts.body,
+    fontSize: 12,
+  },
+  categoriesContainer: {
+    gap: spacing.xs,
+  },
+  categoryItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  categoryLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  categoryDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  categoryName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  categoryAmount: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: colors.text,
+  },
+  transactionsContainer: {
+    gap: spacing.xs,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  transactionIcon: {
     width: 32,
     height: 32,
     borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  categoryName: {
-    fontSize: 16,
-    color: "#FFFFFF",
-  },
-  categoryPercentage: {
-    fontSize: 12,
-    color: "rgba(255, 255, 255, 0.6)",
-    marginTop: 2,
-  },
-  transactionItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
-  },
-  transactionLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  transactionRight: {
-    alignItems: "flex-end",
-  },
-  transactionInfo: {
-    flex: 1,
-  },
-  transactionTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#FFFFFF",
-    marginBottom: 4,
+  transactionDescription: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
   },
   transactionDate: {
-    fontSize: 14,
-    color: "rgba(255, 255, 255, 0.7)",
-  },
-  transactionCategory: {
+    ...fonts.body,
     fontSize: 12,
-    color: "rgba(255, 255, 255, 0.5)",
-    marginTop: 2,
   },
   transactionAmount: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FF3B30",
-  },
-  positiveAmount: {
-    color: "#30D158",
-  },
-  roundUpBadge: {
-    backgroundColor: "rgba(48, 209, 88, 0.2)",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
-    marginTop: 4,
-  },
-  roundUpText: {
-    fontSize: 10,
-    color: visionProColors.green,
-    fontWeight: "500",
-  },
-  aiInsightCard: {
-    borderColor: `${visionProColors.magenta}40`,
-    borderWidth: 1,
-  },
-  aiInsightHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 16,
-  },
-  aiIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  aiInsightContent: {
-    flex: 1,
-  },
-  aiInsightTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#FFFFFF",
-    marginBottom: 4,
-  },
-  aiInsightText: {
     fontSize: 14,
-    color: "rgba(255, 255, 255, 0.8)",
-    lineHeight: 20,
+    fontWeight: 'bold',
   },
-  aiInsightFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  aiIcons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
-  aiInsightAction: {
+  insightsContainer: {
+    gap: spacing.sm,
+  },
+  insightItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    borderLeftWidth: 4,
+  },
+  insightIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.iosBlue,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  insightTitle: {
     fontSize: 14,
-    color: visionProColors.primary,
-    fontWeight: "500",
+    fontWeight: '600',
+    marginBottom: spacing.xs,
   },
-})
+  insightText: {
+    fontSize: 12,
+  },
+});
