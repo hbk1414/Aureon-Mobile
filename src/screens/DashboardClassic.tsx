@@ -174,7 +174,12 @@ function SpendingBreakdownCard() {
             {selectedSlice.label} • {selectedTx.length} item{selectedTx.length !== 1 ? "s" : ""}
           </Text>
           
-          <View style={{ height: selectedTx.length > 3 ? 180 : 'auto', overflow: 'hidden' }}>
+          <View style={{ 
+            height: selectedTx.length > 4 ? 200 : Math.min(selectedTx.length * 60, 200),
+            borderRadius: 8,
+            backgroundColor: 'rgba(0,0,0,0.02)',
+            paddingHorizontal: 8
+          }}>
             <FlatList
               data={[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
               keyExtractor={(item) => item.id}
@@ -188,14 +193,13 @@ function SpendingBreakdownCard() {
                   <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
                 </View>
               )}
-              scrollEnabled={selectedTx.length > 2}
-              showsVerticalScrollIndicator={selectedTx.length > 2}
-              indicatorStyle="default"
+              scrollEnabled={true}
+              showsVerticalScrollIndicator={true}
+              indicatorStyle="black"
               nestedScrollEnabled={true}
-              contentContainerStyle={{ paddingBottom: 8 }}
-              bounces={true}
-              scrollIndicatorInsets={{ right: 2 }}
-              style={{ paddingRight: 8 }}
+              contentContainerStyle={{ paddingVertical: 8 }}
+              bounces={false}
+              style={{ flex: 1 }}
             />
           </View>
         </View>
