@@ -29,7 +29,8 @@ export const TRUELAYER_CONFIG = {
     'info',
     'accounts',
     'balance',
-    'transactions'
+    'transactions',
+    'offline_access'  // Required for refresh tokens
   ],
   
   // Sandbox Bank Providers

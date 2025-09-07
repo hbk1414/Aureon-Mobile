@@ -26,10 +26,16 @@ export function BankingSummaryCard() {
   // Use actual cached balance data
   const displayBalance = totalBalance;
 
-  // Trigger sync when component mounts
+  // Trigger sync when component mounts and clear old tokens
   useEffect(() => {
     console.log('[BankingSummaryCard] Component mounted, triggering sync...');
-    syncAllData();
+    // Clear existing tokens without offline_access scope
+    const initializeWithNewScope = async () => {
+      await trueLayerDataService.disconnect();
+      console.log('[TL] Cleared old tokens - reconnect needed for refresh token support');
+      syncAllData();
+    };
+    initializeWithNewScope();
   }, []);
 
   const testAPIConnection = async () => {
@@ -101,9 +107,6 @@ export function BankingSummaryCard() {
           <Text style={[styles.dataSourceIndicator, { color: isUsingMockData ? '#FF9F0A' : '#30D158' }]}>
             {isUsingMockData ? '📊 Mock' : '🌐 Live'}
           </Text>
-          <TouchableOpacity onPress={switchToMockData} style={styles.testButton}>
-            <Text style={styles.testButtonText}>📊</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={testAPIConnection} style={styles.testButton}>
             <Text style={styles.testButtonText}>🧪</Text>
           </TouchableOpacity>

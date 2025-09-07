@@ -160,7 +160,7 @@ export default function BankConnectionScreen({ navigation, route }: BankConnecti
         response_type: 'code',
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,            // EXACT string
-        scope: 'info accounts balance transactions',
+        scope: 'info accounts balance transactions offline_access',
         state,
         provider_id: 'mock',
         code_challenge: challenge,

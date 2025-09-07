@@ -430,8 +430,7 @@ class TrueLayerDataService {
       console.log('[TL] Token expired, attempting refresh...');
       const refreshed = await this.refreshAccessToken();
       if (!refreshed) {
-        console.log('[TL] Authentication failed, will use mock data');
-        throw new Error('Authentication failed - using mock data');
+        throw new Error('Authentication failed - please reconnect your bank');
       }
     }
 
