@@ -703,12 +703,12 @@ export const useTransactions = () => {
       try {
         setLoading(true);
         
-        // Use our working TrueLayer data service
-        const accounts = await trueLayerDataService.getAccounts();
+        // Use our working TrueLayer data service - get cached transactions
+        const accounts = await trueLayerDataService.getCachedAccounts();
         
         if (accounts.length > 0) {
-          // Get all transactions from the first account
-          const tlTransactions = await trueLayerDataService.getTransactions();
+          // Get cached transactions from first account (already stored from sync)
+          const tlTransactions = await trueLayerDataService.getCachedTransactions(accounts[0].account_id);
           const convertedTransactions = tlTransactions.map(convertTrueLayerTransaction);
           setTransactions(convertedTransactions);
           console.log(`[DataService] Loaded ${convertedTransactions.length} real transactions from TrueLayer`);
@@ -767,8 +767,11 @@ export const useUpcomingBills = () => {
       try {
         setLoading(true);
         
-        // Get real transactions from TrueLayer
-        const tlTransactions = await trueLayerDataService.getTransactions();
+        // Get cached transactions from TrueLayer data service
+        const accounts = await trueLayerDataService.getCachedAccounts();
+        if (accounts.length === 0) throw new Error('No accounts available');
+        
+        const tlTransactions = await trueLayerDataService.getCachedTransactions(accounts[0].account_id);
         
         // Find recurring transactions to predict upcoming bills
         const recurringTransactions = tlTransactions.filter(tx => 
@@ -949,8 +952,11 @@ export const useMonthlyTrends = () => {
       try {
         setLoading(true);
         
-        // Get real transactions from TrueLayer
-        const tlTransactions = await trueLayerDataService.getTransactions();
+        // Get cached transactions from TrueLayer data service
+        const accounts = await trueLayerDataService.getCachedAccounts();
+        if (accounts.length === 0) throw new Error('No accounts available');
+        
+        const tlTransactions = await trueLayerDataService.getCachedTransactions(accounts[0].account_id);
         
         // Group transactions by month and calculate trends
         const monthlyData: { [key: string]: { income: number; expenses: number; transactions: any[] } } = {};
