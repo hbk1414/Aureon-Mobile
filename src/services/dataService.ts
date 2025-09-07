@@ -773,29 +773,48 @@ export const useUpcomingBills = () => {
         
         const tlTransactions = await trueLayerDataService.getCachedTransactions(accounts[0].account_id);
         
-        // Find recurring transactions to predict upcoming bills
-        const recurringTransactions = tlTransactions.filter(tx => 
-          tx.transaction_type === 'DEBIT' && 
-          (tx.transaction_category === 'BILLS' || 
-           tx.transaction_category === 'SUBSCRIPTIONS' ||
-           tx.description.toLowerCase().includes('subscription') ||
-           tx.description.toLowerCase().includes('bill') ||
-           tx.description.toLowerCase().includes('monthly'))
-        ).slice(0, 5); // Take top 5 for upcoming bills
+        // Find direct debits for current month only
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
         
-        const bills: UpcomingBill[] = recurringTransactions.map((tx, index) => {
-          const nextDate = new Date();
-          nextDate.setDate(nextDate.getDate() + (7 + index * 3)); // Spread over next few weeks
+        // Get unique direct debits from current month
+        const directDebits = tlTransactions.filter(tx => {
+          const txDate = new Date(tx.timestamp);
+          return tx.transaction_type === 'DEBIT' && 
+                 txDate.getMonth() === currentMonth &&
+                 txDate.getFullYear() === currentYear &&
+                 (tx.transaction_category === 'DIRECT_DEBIT' || 
+                  tx.description.toLowerCase().includes('direct debit') ||
+                  tx.description.toLowerCase().includes('dd '));
+        });
+        
+        // Remove duplicates based on merchant/description and get unique bills
+        const uniqueDirectDebits = directDebits.reduce((unique: any[], tx: any) => {
+          const normalizedDescription = tx.description.toLowerCase().trim();
+          const exists = unique.find(existing => 
+            existing.description.toLowerCase().trim() === normalizedDescription
+          );
+          if (!exists) {
+            unique.push(tx);
+          }
+          return unique;
+        }, []).slice(0, 5); // Limit to 5 items
+        
+        const bills: UpcomingBill[] = uniqueDirectDebits.map((tx) => {
+          // Predict next month's payment date based on this month's date
+          const currentPaymentDate = new Date(tx.timestamp);
+          const nextPaymentDate = new Date(currentPaymentDate);
+          nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
           
           return {
-            id: tx.transaction_id + '_upcoming',
+            id: tx.transaction_id + '_next_month',
             label: tx.description,
-            date: nextDate.toISOString().split('T')[0],
+            date: nextPaymentDate.toISOString().split('T')[0],
             amount: Math.abs(tx.amount),
-            category: tx.transaction_category || 'Bills',
-            isSubscription: tx.description.toLowerCase().includes('subscription'),
+            category: 'Direct Debit',
+            isSubscription: true,
             recurrence: 'monthly',
-            canPayNow: true,
+            canPayNow: false, // Direct debits can't be paid manually
           };
         });
         
