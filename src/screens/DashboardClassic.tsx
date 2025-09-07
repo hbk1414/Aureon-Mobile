@@ -176,11 +176,14 @@ function SpendingBreakdownCard() {
                   <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
                 </View>
               )}
-              scrollEnabled={selectedTx.length > 3}
-              showsVerticalScrollIndicator={selectedTx.length > 3}
+              scrollEnabled={selectedTx.length > 2}
+              showsVerticalScrollIndicator={selectedTx.length > 2}
+              indicatorStyle="default"
               nestedScrollEnabled={true}
               contentContainerStyle={{ paddingBottom: 8 }}
-              bounces={false}
+              bounces={true}
+              scrollIndicatorInsets={{ right: 2 }}
+              style={{ paddingRight: 8 }}
             />
           </View>
         </View>
