@@ -36,7 +36,8 @@
       ]
     },
     "web": {
-      "favicon": "./public/placeholder-logo.png"
+      "favicon": "./public/placeholder-logo.png",
+      "bundler": "webpack"
     },
     "plugins": [
       [
