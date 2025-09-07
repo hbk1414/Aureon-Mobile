@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { trueLayerService, TrueLayerAccount, TrueLayerTransaction } from "./truelayerService";
+import { trueLayerDataService } from "./truelayerDataService";
 
 // Types
 export interface Transaction {
@@ -159,26 +159,26 @@ export interface MonthlyTrendData {
 }
 
 // Helper function to convert TrueLayer transaction to app format
-const convertTrueLayerTransaction = (tlTransaction: TrueLayerTransaction): Transaction => {
+const convertTrueLayerTransaction = (tlTransaction: any): Transaction => {
+  const amount = Math.abs(tlTransaction.amount);
+  const isIncome = tlTransaction.amount > 0;
+  
   return {
-    id: tlTransaction.transactionId,
+    id: tlTransaction.transactionId || tlTransaction.id || Date.now().toString(),
     name: tlTransaction.description,
-    amount: Math.abs(tlTransaction.amount),
-    category: tlTransaction.category || 'Other',
+    amount: amount,
+    category: tlTransaction.transactionCategory || tlTransaction.category || (isIncome ? 'Income' : 'Other'),
     date: new Date(tlTransaction.timestamp).toISOString().split('T')[0],
     time: new Date(tlTransaction.timestamp).toTimeString().split(' ')[0],
-    merchant: tlTransaction.merchantName,
+    merchant: tlTransaction.merchantName || tlTransaction.description,
     notes: tlTransaction.description,
   };
 };
 
 // Helper function to get current balance from TrueLayer accounts
-const getCurrentBalance = (accounts: TrueLayerAccount[]): number => {
-  return accounts.reduce((total, account) => {
-    if (account.accountType === 'TRANSACTION') {
-      return total + account.balance.available;
-    }
-    return total;
+const getCurrentBalance = (balances: any[]): number => {
+  return balances.reduce((total, balance) => {
+    return total + (balance.current || 0);
   }, 0);
 };
 
@@ -703,30 +703,24 @@ export const useTransactions = () => {
       try {
         setLoading(true);
         
-        // Check if TrueLayer is connected
-        if (trueLayerService.isAuthenticated()) {
-          // Get accounts from TrueLayer
-          const accounts = await trueLayerService.getAccounts();
-          
-          // Get transactions from the first account (or combine all)
-          if (accounts.length > 0) {
-            const tlTransactions = await trueLayerService.getTransactions(accounts[0].accountId);
-            const convertedTransactions = tlTransactions.map(convertTrueLayerTransaction);
-            setTransactions(convertedTransactions);
-          } else {
-            setTransactions(mockTransactions);
-          }
+        // Use our working TrueLayer data service
+        const accounts = await trueLayerDataService.getAccounts();
+        
+        if (accounts.length > 0) {
+          // Get all transactions from the first account
+          const tlTransactions = await trueLayerDataService.getTransactions();
+          const convertedTransactions = tlTransactions.map(convertTrueLayerTransaction);
+          setTransactions(convertedTransactions);
+          console.log(`[DataService] Loaded ${convertedTransactions.length} real transactions from TrueLayer`);
         } else {
-          // Use mock data if not connected
-          setTransactions(mockTransactions);
+          throw new Error('No accounts available');
         }
         
         setError(null);
       } catch (err) {
         console.error("Error fetching transactions:", err);
-        setError("Failed to load transactions");
-        // Fallback to mock data
-        setTransactions(mockTransactions);
+        setError("Failed to load transactions - please connect your bank account");
+        setTransactions([]); // No fallback to mock data as requested
       } finally {
         setLoading(false);
       }
@@ -772,11 +766,43 @@ export const useUpcomingBills = () => {
     const fetchUpcomingBills = async () => {
       try {
         setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 600));
-        setUpcomingBills(mockUpcomingBills);
+        
+        // Get real transactions from TrueLayer
+        const tlTransactions = await trueLayerDataService.getTransactions();
+        
+        // Find recurring transactions to predict upcoming bills
+        const recurringTransactions = tlTransactions.filter(tx => 
+          tx.transaction_type === 'DEBIT' && 
+          (tx.transaction_category === 'BILLS' || 
+           tx.transaction_category === 'SUBSCRIPTIONS' ||
+           tx.description.toLowerCase().includes('subscription') ||
+           tx.description.toLowerCase().includes('bill') ||
+           tx.description.toLowerCase().includes('monthly'))
+        ).slice(0, 5); // Take top 5 for upcoming bills
+        
+        const bills: UpcomingBill[] = recurringTransactions.map((tx, index) => {
+          const nextDate = new Date();
+          nextDate.setDate(nextDate.getDate() + (7 + index * 3)); // Spread over next few weeks
+          
+          return {
+            id: tx.transaction_id + '_upcoming',
+            label: tx.description,
+            date: nextDate.toISOString().split('T')[0],
+            amount: Math.abs(tx.amount),
+            category: tx.transaction_category || 'Bills',
+            isSubscription: tx.description.toLowerCase().includes('subscription'),
+            recurrence: 'monthly',
+            canPayNow: true,
+          };
+        });
+        
+        setUpcomingBills(bills);
+        console.log(`[DataService] Generated ${bills.length} upcoming bills from real transaction data`);
         setError(null);
       } catch (err) {
-        setError("Failed to load upcoming bills");
+        console.error("Error generating upcoming bills:", err);
+        setError("Failed to load upcoming bills - please connect your bank account");
+        setUpcomingBills([]); // No fallback to mock data as requested
       } finally {
         setLoading(false);
       }
@@ -922,11 +948,61 @@ export const useMonthlyTrends = () => {
     const fetchMonthlyTrends = async () => {
       try {
         setLoading(true);
-        await new Promise(resolve => setTimeout(resolve, 700));
-        setMonthlyTrends(mockMonthlyTrends);
+        
+        // Get real transactions from TrueLayer
+        const tlTransactions = await trueLayerDataService.getTransactions();
+        
+        // Group transactions by month and calculate trends
+        const monthlyData: { [key: string]: { income: number; expenses: number; transactions: any[] } } = {};
+        
+        tlTransactions.forEach(tx => {
+          const date = new Date(tx.timestamp);
+          const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          const monthName = date.toLocaleString('default', { month: 'short' });
+          
+          if (!monthlyData[monthKey]) {
+            monthlyData[monthKey] = { income: 0, expenses: 0, transactions: [] };
+          }
+          
+          if (tx.transaction_type === 'CREDIT') {
+            monthlyData[monthKey].income += Math.abs(tx.amount);
+          } else {
+            monthlyData[monthKey].expenses += Math.abs(tx.amount);
+          }
+          monthlyData[monthKey].transactions.push(tx);
+        });
+        
+        // Convert to trend data format
+        const trends: MonthlyTrendData[] = Object.entries(monthlyData)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .slice(-6) // Last 6 months
+          .map(([monthKey, data]) => {
+            const [year, month] = monthKey.split('-');
+            const monthName = new Date(parseInt(year), parseInt(month) - 1).toLocaleString('default', { month: 'short' });
+            
+            return {
+              month: monthName,
+              income: Math.round(data.income),
+              expenses: Math.round(data.expenses),
+              netIncome: Math.round(data.income - data.expenses),
+              savings: Math.round(Math.max(0, data.income - data.expenses)),
+              spendingCategories: data.transactions
+                .filter(tx => tx.transaction_type === 'DEBIT')
+                .reduce((acc: any, tx: any) => {
+                  const category = tx.transaction_category || 'Other';
+                  acc[category] = (acc[category] || 0) + Math.abs(tx.amount);
+                  return acc;
+                }, {})
+            };
+          });
+        
+        setMonthlyTrends(trends);
+        console.log(`[DataService] Calculated monthly trends for ${trends.length} months from real transaction data`);
         setError(null);
       } catch (err) {
-        setError("Failed to load monthly trends");
+        console.error("Error calculating monthly trends:", err);
+        setError("Failed to load monthly trends - please connect your bank account");
+        setMonthlyTrends([]); // No fallback to mock data as requested
       } finally {
         setLoading(false);
       }
