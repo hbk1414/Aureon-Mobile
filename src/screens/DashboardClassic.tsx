@@ -157,34 +157,38 @@ function SpendingBreakdownCard() {
       </View>
 
       {selectedSlice && (
-        <View style={[styles.detailCard, { borderLeftColor: selectedSlice.color }]}>
+        <View style={[
+          styles.detailCard, 
+          { 
+            borderLeftColor: selectedSlice.color,
+            maxHeight: 250, // Set fixed max height
+            overflow: 'hidden' // Prevent overflow
+          }
+        ]}>
           <Text style={styles.detailTitle}>
             {selectedSlice.label} • {selectedTx.length} item{selectedTx.length !== 1 ? "s" : ""}
           </Text>
           
-          <FlatList
-            data={[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
-            keyExtractor={(item) => item.id}
-            ItemSeparatorComponent={() => <View style={styles.sep} />}
-            renderItem={({ item }) => (
-              <View style={styles.txRow}>
-                <View style={styles.txCol}>
-                  <Text style={styles.txName}>{item.name}</Text>
-                  <Text style={styles.txSub}>{item.date} • {item.time}</Text>
+          <View style={{ flex: 1, maxHeight: 200 }}>
+            <FlatList
+              data={[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
+              keyExtractor={(item) => item.id}
+              ItemSeparatorComponent={() => <View style={styles.sep} />}
+              renderItem={({ item }) => (
+                <View style={styles.txRow}>
+                  <View style={styles.txCol}>
+                    <Text style={styles.txName}>{item.name}</Text>
+                    <Text style={styles.txSub}>{item.date} • {item.time}</Text>
+                  </View>
+                  <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
                 </View>
-                <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
-              </View>
-            )}
-            style={{ 
-              maxHeight: selectedTx.length > 3 ? 180 : 'auto',
-              flex: selectedTx.length > 3 ? 1 : 0
-            }}
-            scrollEnabled={selectedTx.length > 3}
-            showsVerticalScrollIndicator={selectedTx.length > 3}
-            nestedScrollEnabled={true}
-            contentContainerStyle={{ paddingBottom: 8 }}
-            bounces={false}
-          />
+              )}
+              scrollEnabled={true}
+              showsVerticalScrollIndicator={selectedTx.length > 3}
+              contentContainerStyle={{ paddingBottom: 8 }}
+              bounces={false}
+            />
+          </View>
         </View>
       )}
     </View>
