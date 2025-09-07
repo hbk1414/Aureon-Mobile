@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
-import { SafeAreaView, View, Text, StyleSheet, FlatList, TouchableOpacity, Animated, Modal, TextInput, Image } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, Animated, Modal, TextInput, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import TouchablePieChart, { Slice } from "../../components/TouchablePieChart";
 import { 
