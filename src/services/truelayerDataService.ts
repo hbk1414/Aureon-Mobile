@@ -516,7 +516,13 @@ class TrueLayerDataService {
       
       console.log(`[TL] Balance endpoint: ${endpoint}`);
       
-      const response = await this.makeAuthenticatedRequest<{ results: TrueLayerBalanceResponse[] }>(endpoint);
+      let response;
+      try {
+        response = await this.makeAuthenticatedRequest<{ results: TrueLayerBalanceResponse[] }>(endpoint);
+      } catch (error) {
+        console.log('[TL] Bulk balance endpoint failed, trying individual endpoints...');
+        throw error; // Let it fall through to individual balance logic
+      }
       
       console.log('[TL] Balance API response:', JSON.stringify(response.results, null, 2));
       
