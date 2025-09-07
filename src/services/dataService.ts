@@ -1057,9 +1057,10 @@ export const useCurrentBalance = () => {
         setLoading(true);
         
         // Check if TrueLayer is connected
-        if (trueLayerService.isAuthenticated()) {
-          const accounts = await trueLayerService.getAccounts();
-          const currentBalance = getCurrentBalance(accounts);
+        if (await trueLayerDataService.isAuthenticated()) {
+          const accounts = await trueLayerDataService.getCachedAccounts();
+          const balances = await trueLayerDataService.getCachedBalances();
+          const currentBalance = getCurrentBalance(balances);
           setBalance(currentBalance);
         } else {
           // Use mock balance if not connected
