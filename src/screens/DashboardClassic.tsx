@@ -175,9 +175,15 @@ function SpendingBreakdownCard() {
                 <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
               </View>
             )}
-            style={{ maxHeight: 4 * 60 }}
-            scrollEnabled={selectedTx.length > 4}
-            showsVerticalScrollIndicator={true}
+            style={{ 
+              maxHeight: selectedTx.length > 3 ? 180 : 'auto',
+              flex: selectedTx.length > 3 ? 1 : 0
+            }}
+            scrollEnabled={selectedTx.length > 3}
+            showsVerticalScrollIndicator={selectedTx.length > 3}
+            nestedScrollEnabled={true}
+            contentContainerStyle={{ paddingBottom: 8 }}
+            bounces={false}
           />
         </View>
       )}
