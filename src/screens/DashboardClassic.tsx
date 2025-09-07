@@ -174,18 +174,22 @@ function SpendingBreakdownCard() {
             {selectedSlice.label} • {selectedTx.length} item{selectedTx.length !== 1 ? "s" : ""}
           </Text>
           
-          <View style={{ 
-            height: 180,
-            borderRadius: 8,
-            backgroundColor: 'rgba(0,0,0,0.02)',
-            paddingHorizontal: 8,
-            overflow: 'hidden'
-          }}>
-            <FlatList
-              data={[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
-              keyExtractor={(item) => item.id}
-              ItemSeparatorComponent={() => <View style={styles.sep} />}
-              renderItem={({ item }) => (
+          <ScrollView
+            style={{ 
+              height: 180,
+              borderRadius: 8,
+              backgroundColor: 'rgba(0,0,0,0.02)',
+              paddingHorizontal: 8,
+            }}
+            contentContainerStyle={{ paddingVertical: 8 }}
+            showsVerticalScrollIndicator={true}
+            indicatorStyle="black"
+            bounces={false}
+            nestedScrollEnabled={true}
+          >
+            {[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).map((item, index) => (
+              <View key={item.id}>
+                {index > 0 && <View style={styles.sep} />}
                 <View style={styles.txRow}>
                   <View style={styles.txCol}>
                     <Text style={styles.txName}>{item.name}</Text>
@@ -193,16 +197,9 @@ function SpendingBreakdownCard() {
                   </View>
                   <Text style={styles.txAmt}>{formatCurrency(item.amount)}</Text>
                 </View>
-              )}
-              scrollEnabled={true}
-              showsVerticalScrollIndicator={true}
-              indicatorStyle="black"
-              nestedScrollEnabled={true}
-              contentContainerStyle={{ paddingVertical: 8 }}
-              bounces={false}
-              style={{ flex: 1 }}
-            />
-          </View>
+              </View>
+            ))}
+          </ScrollView>
         </View>
       )}
     </View>
