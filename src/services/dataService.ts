@@ -160,17 +160,18 @@ export interface MonthlyTrendData {
 
 // Helper function to convert TrueLayer transaction to app format
 const convertTrueLayerTransaction = (tlTransaction: any): Transaction => {
-  const amount = Math.abs(tlTransaction.amount);
-  const isIncome = tlTransaction.amount > 0;
+  // Keep negative amounts for expenses and positive for income
+  // TrueLayer: DEBIT = outgoing (negative), CREDIT = incoming (positive)
+  const amount = tlTransaction.transaction_type === 'DEBIT' ? -Math.abs(tlTransaction.amount) : Math.abs(tlTransaction.amount);
   
   return {
-    id: tlTransaction.transactionId || tlTransaction.id || Date.now().toString(),
+    id: tlTransaction.transaction_id || tlTransaction.id || Date.now().toString(),
     name: tlTransaction.description,
     amount: amount,
-    category: tlTransaction.transactionCategory || tlTransaction.category || (isIncome ? 'Income' : 'Other'),
+    category: tlTransaction.transaction_category || tlTransaction.category || (amount > 0 ? 'Income' : 'Other'),
     date: new Date(tlTransaction.timestamp).toISOString().split('T')[0],
     time: new Date(tlTransaction.timestamp).toTimeString().split(' ')[0],
-    merchant: tlTransaction.merchantName || tlTransaction.description,
+    merchant: tlTransaction.merchant_name || tlTransaction.description,
     notes: tlTransaction.description,
   };
 };
@@ -780,12 +781,15 @@ export const useUpcomingBills = () => {
         // Get unique direct debits from current month
         const directDebits = tlTransactions.filter(tx => {
           const txDate = new Date(tx.timestamp);
+          const desc = tx.description.toLowerCase();
           return tx.transaction_type === 'DEBIT' && 
                  txDate.getMonth() === currentMonth &&
                  txDate.getFullYear() === currentYear &&
                  (tx.transaction_category === 'DIRECT_DEBIT' || 
-                  tx.description.toLowerCase().includes('direct debit') ||
-                  tx.description.toLowerCase().includes('dd '));
+                  desc.includes('direct debit') ||
+                  desc.includes('dd ') ||
+                  desc.includes('subscription') ||
+                  desc.includes('monthly'));
         });
         
         // Remove duplicates based on merchant/description and get unique bills
