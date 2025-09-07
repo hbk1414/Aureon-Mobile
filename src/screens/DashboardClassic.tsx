@@ -175,10 +175,11 @@ function SpendingBreakdownCard() {
           </Text>
           
           <View style={{ 
-            height: selectedTx.length > 4 ? 200 : Math.min(selectedTx.length * 60, 200),
+            height: 180,
             borderRadius: 8,
             backgroundColor: 'rgba(0,0,0,0.02)',
-            paddingHorizontal: 8
+            paddingHorizontal: 8,
+            overflow: 'hidden'
           }}>
             <FlatList
               data={[...selectedTx].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())}
