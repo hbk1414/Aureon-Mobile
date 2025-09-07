@@ -69,7 +69,11 @@ function SpendingBreakdownCard() {
     const categoryTotals: { [key: string]: number } = {};
     transactions.forEach(tx => {
       if (tx.amount < 0) {
-        const category = tx.category;
+        // Temporarily group more transactions into "Purchases" for scroll testing
+        let category = tx.category;
+        if (category === 'TRANSFER' || category === 'DIRECT_DEBIT' || category === 'PURCHASE') {
+          category = 'Purchases & Transfers';
+        }
         categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(tx.amount);
       }
     });
@@ -86,9 +90,17 @@ function SpendingBreakdownCard() {
   const selectedSlice = selected != null ? pieData[selected] : null;
   const selectedTx: Transaction[] = useMemo(() => {
     if (!selectedSlice) return [];
-    return transactions.filter(tx => 
-      tx.category === selectedSlice.label && tx.amount < 0
-    );
+    return transactions.filter(tx => {
+      if (tx.amount >= 0) return false;
+      
+      // Match the same grouping logic used for categorization
+      let category = tx.category;
+      if (category === 'TRANSFER' || category === 'DIRECT_DEBIT' || category === 'PURCHASE') {
+        category = 'Purchases & Transfers';
+      }
+      
+      return category === selectedSlice.label;
+    });
   }, [selectedSlice, transactions]);
 
   const handleSegmentSelect = (index: number) => {
