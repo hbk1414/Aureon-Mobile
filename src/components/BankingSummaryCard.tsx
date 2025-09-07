@@ -29,12 +29,7 @@ export function BankingSummaryCard() {
   // Trigger sync when component mounts
   useEffect(() => {
     console.log('[BankingSummaryCard] Component mounted, triggering sync...');
-    // For testing: automatically switch to comprehensive mock data
-    const initializeData = async () => {
-      await trueLayerDataService.useMockData();
-      syncAllData();
-    };
-    initializeData();
+    syncAllData();
   }, []);
 
   const testAPIConnection = async () => {
