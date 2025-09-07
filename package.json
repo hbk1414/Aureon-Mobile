@@ -7,7 +7,9 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "web:replit": "EXPO_WEB_PORT=5000 expo start --web --host lan"
+    "web:replit": "EXPO_WEB_PORT=5000 expo start --web --host lan",
+    "build": "expo export:web",
+    "serve": "npx serve web-build -s -l 5000"
   },
   "dependencies": {
     "@expo-google-fonts/poppins": "^0.4.0",
