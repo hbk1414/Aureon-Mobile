@@ -1,0 +1,20 @@
+ LOG  [TL] Token expired, attempting refresh...
+ ERROR  [TL] No refresh token available
+ ERROR  [TL] Failed to fetch accounts: [Error: Authentication failed - please reconnect your bank]
+ ERROR  [TL] Full data sync failed: [Error: Authentication failed - please reconnect your bank]
+ ERROR  [Sync] Data sync failed: [Error: Authentication failed - please reconnect your bank]
+ LOG  [Sync] Retrying sync (1/3)...
+ LOG  OAuth result: {"error": null, "type": "success", "url": "aureonmobile://oauth/callback?code=2BB114EF77DF15064C669FBD5B48F00BDC5473D114D9D365136518C62C1CD862&scope=info%20accounts%20balance%20transactions%20offline_access&state=bffefa08dk4"}
+ LOG  OAuth code received, exchanging for tokens...
+ LOG  [TL] token exchange {"client_id": "sandbox-aureon-52c96f", "code_len": 64, "redirect_uri": "aureonmobile://oauth/callback", "verifier_len": 64}
+ LOG  [TL] token request body: grant_type=authorization_code&client_id=sandbox-aureon-52c96f&client_secret=019bcc14-faad-4806-b6ef-abbd56034f30&redirect_uri=aureonmobile%3A%2F%2Foauth%2Fcallback&code=2BB114EF77DF15064C669FBD5B48F00BDC5473D114D9D365136518C62C1CD862&code_verifier=reE0QvgfppS%7Ej7t4GZGbMhefuQS3_tM4RQ5mCQovioQe9B_0mE4DyhgGeyquaznV
+ LOG  [TL] token response status: 200
+ LOG  [TL] token response: {"access_token":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE0NTk4OUIwNTdDOUMzMzg0MDc4MDBBOEJBNkNCOUZFQjMzRTk1MTBSUzI1NiIsIng1dCI6IkZGbUpzRmZKd3poQWVBQ291bXk1X3JNLWxSQSIsInR5cCI6ImF0K2p3dCJ9.eyJpc3MiOiJodHRwczovL2F1dGgudHJ1ZWxheWVyLXNhbmRib3guY29tIiwibmJmIjoxNzU3Mjg2NTM3LCJpYXQiOjE3NTcyODY1MzcsImV4cCI6MTc1NzI5MDEzNywiYXVkIjoiZGF0YV9hcGkiLCJzY29wZSI6WyJpbmZvIiwiYWNjb3VudHMiLCJiYWxhbmNlIiwidHJhbnNhY3Rpb25zIiwib2ZmbGluZV9hY2Nlc3MiXSwiYW1yIjpbInB3ZCJdLCJjbGllbnRfaWQiOiJzYW5kYm94LWF1cmVvbi01MmM5NmYiLCJzdWIiOiJUcGRiZ3VUQzgyTVppRlQzeDVUOE9teHdlQjkyeXRVWE5jWVJueEh3SURrPSIsImF1dGhfdGltZSI6MTc1NzI4NjUzNywiaWRwIjoibG9jYWwiLCJzaWQiOiJhZnNzLWlPLWJueUNFZ29pbHlqWkEwdlNHUnVqcWx2LUdYenNVUzJlYTl4U3RIc2siLCJjb25uZWN0b3JfaWQiOiJtb2NrIiwiY3JlZGVudGlhbHNfa2V5IjoiNTQ1YmJjYjMwMDVlYWQ5YzhmYzQyMzU5N2M5YTBkOTc1OTY3NGJjNTcyMjUzMjI0MDQ0ZGIyMDNkNGZkMjA4NSIsInByaXZhY3lfcG9saWN5IjoiU2VwMjAyMyIsImNvbnNlbnRfaWQiOiJkODNjODMwMC0xZmYwLTRiZDQtYjg3Yy0yOWYwY2Q0NTRmOTMiLCJjb25zZW50X2V4cGlyeV90aW1lIjoxNzY1MDYyNTM3LCJjb25uZWN0aW9uX2lkIjoiOTUwZjE0ODEtNDBhMy00OWU4LTkzNDQtMjhmMTI3NDc2YzY4IiwianRpIjoiRDZFODU5RDIwRDdDQjM2M0MwM0UwMjcxRUY5ODZFODEifQ.hTRvxKiJU2GUhNM67fw1Ahg83yWxEkeAD_DNSaQgzouh79VjkIh400ET4IbaM4Pp3xsbWmNg8Nzd0-elftvP0WHv7y-hCbHah6lWyGzMFxSyVbDC_0l5w0zM-zbS8ee_PnsaDB5ziT7yrNrXGQKxE3QVmJ_JoOZCiJ0KAYu6_ctf_PzjnS4G-BaT1K74taz5xKc4JmVqPyJCclJe1vq-jOjasrhKaHIDEE7CUEdZ94CxSyjGKSMoKWrUpSFXFRe3ivaPTaQ4dAiCEdlm5cmLk-4gk2uhX_0riepEkqOpEVVR7E8tYdT2QwbIIQuxk9MYuziHTJWfhn5vdKS-Wsr4kA","expires_in":3600,"token_type":"Bearer","refresh_token":"7886A865E52DDF4D2F53688C674CB5DB729D53B4D0D790BD5DFAAC32D7C48DA0","scope":"info accounts balance transactions offline_access"}
+ LOG  [TL] token ok scopes: info accounts balance transactions offline_access
+ LOG  [TL] token response keys: ["access_token", "expires_in", "token_type", "refresh_token", "scope"]
+ LOG  [TL] has refresh_token: true
+ LOG  [TL] refresh_token length: 64
+ LOG  [TL] Storing tokens: {"expiresIn": 3600, "hasAccessToken": true, "hasRefreshToken": true, "scope": "info accounts balance transactions offline_access"}
+ LOG  [TL] Tokens stored successfully
+ LOG  [TL] Token expiry: 2025-09-08T00:08:57.829Z
+ ERROR  TypeError: navigation.navigate is not a function (it is undefined), js engine: hermes

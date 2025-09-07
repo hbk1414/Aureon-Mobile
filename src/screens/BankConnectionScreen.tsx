@@ -205,22 +205,8 @@ export default function BankConnectionScreen({ navigation, route }: BankConnecti
       
       Alert.alert(
         'Success!',
-        `Successfully connected to ${provider.name}`,
-        [
-          {
-            text: 'View Banking Data',
-            onPress: () => {
-              // Navigate to banking dashboard
-              navigation.navigate('Banking' as never);
-            }
-          },
-          {
-            text: 'Continue',
-            onPress: () => {
-              navigation.goBack();
-            }
-          }
-        ]
+        `Successfully connected to ${provider.name}\n\nYou now have persistent tokens with refresh capability!`,
+        [{ text: 'OK' }]
       );
     } catch (error) {
       console.error('Error starting OAuth flow:', error);
