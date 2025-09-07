@@ -499,21 +499,7 @@ class TrueLayerDataService {
         console.error('[TL] Failed to load cached accounts:', cacheError);
       }
       
-      // Fallback to mock account data when authentication fails
-      console.log('[TL] Using mock account data as fallback');
-      return [{
-        account_id: 'mock-account-1',
-        account_type: 'TRANSACTION',
-        currency: 'GBP',
-        display_name: 'Mock Current Account',
-        account_number: '12345678',
-        sort_code: '12-34-56',
-        provider: {
-          display_name: 'Mock Bank',
-          provider_id: 'mock',
-          logo_uri: '🏦'
-        }
-      }];
+      throw error;
     }
   }
 
@@ -604,9 +590,7 @@ class TrueLayerDataService {
         console.error('[TL] Failed to load cached balances:', cacheError);
       }
       
-      // Fallback to mock data if all else fails
-      console.log('[TL] Using mock balance data as fallback');
-      return this.generateMockBalances(accountIds);
+      throw error;
     }
   }
 
@@ -627,12 +611,7 @@ class TrueLayerDataService {
       
       const response = await this.makeAuthenticatedRequest<{ results: TrueLayerTransaction[] }>(endpoint);
       
-      // Check if transactions are empty, use mock data as fallback
       let transactions = response.results;
-      if (transactions.length === 0) {
-        console.log('[TL] No transaction data from API, using mock data');
-        transactions = this.generateMockTransactions(accountId);
-      }
       
       // Store transactions for offline access
       const cacheKey = `${this.TRANSACTIONS_STORE_KEY}_${accountId}`;
@@ -655,9 +634,7 @@ class TrueLayerDataService {
         console.error('[TL] Failed to load cached transactions:', cacheError);
       }
       
-      // Fallback to mock data if all else fails
-      console.log('[TL] Using mock transaction data as fallback');
-      return this.generateMockTransactions(accountId);
+      throw error;
     }
   }
 

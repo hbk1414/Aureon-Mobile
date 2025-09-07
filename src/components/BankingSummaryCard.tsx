@@ -26,16 +26,10 @@ export function BankingSummaryCard() {
   // Use actual cached balance data
   const displayBalance = totalBalance;
 
-  // Trigger sync when component mounts and clear old tokens
+  // Trigger sync when component mounts
   useEffect(() => {
     console.log('[BankingSummaryCard] Component mounted, triggering sync...');
-    // Clear existing tokens without offline_access scope
-    const initializeWithNewScope = async () => {
-      await trueLayerDataService.disconnect();
-      console.log('[TL] Cleared old tokens - reconnect needed for refresh token support');
-      syncAllData();
-    };
-    initializeWithNewScope();
+    syncAllData();
   }, []);
 
   const testAPIConnection = async () => {
