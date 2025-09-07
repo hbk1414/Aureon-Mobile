@@ -83,8 +83,8 @@ class TrueLayerDataService {
     const mockBalances: TrueLayerBalance[] = [
       {
         account_id: accountIds?.[0] || 'mock-account-1',
-        current: 1000.00, // Changed to £1,000 for easy identification
-        available: 1000.00,
+        current: 1890.45, // Realistic balance after monthly expenses
+        available: 2390.45, // Including £500 overdraft
         overdraft: 500.00,
         limit: 500.00,
         currency: 'GBP',
@@ -92,8 +92,8 @@ class TrueLayerDataService {
       },
       {
         account_id: accountIds?.[1] || 'mock-account-2',
-        current: 1000.00, // Changed to £1,000 for easy identification
-        available: 1000.00,
+        current: 8750.00, // Savings account
+        available: 8750.00,
         overdraft: 0.00,
         limit: 0.00,
         currency: 'GBP',
@@ -105,8 +105,8 @@ class TrueLayerDataService {
     if (accountIds && accountIds.length > 0) {
       return accountIds.map((accountId, index) => ({
         account_id: accountId,
-        current: 1000.00, // Always £1,000 for mock data
-        available: 1000.00,
+        current: index === 0 ? 1890.45 : 8750.00,
+        available: index === 0 ? 2390.45 : 8750.00,
         overdraft: index === 0 ? 500.00 : 0.00,
         limit: index === 0 ? 500.00 : 0.00,
         currency: 'GBP',
@@ -118,81 +118,196 @@ class TrueLayerDataService {
   }
 
   private generateMockTransactions(accountId: string): TrueLayerTransaction[] {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    
     return [
+      // This month's salary (25th of current month)
       {
-        transaction_id: 'mock-tx-1',
-        timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-        description: 'TESCO STORES 3294',
-        transaction_type: 'DEBIT',
-        transaction_category: 'Food & Drink',
-        transaction_classification: ['Shopping', 'Food'],
-        amount: -45.67,
-        currency: 'GBP',
-        merchant_name: 'Tesco',
-        running_balance: {
-          amount: 954.33,
-          currency: 'GBP',
-        },
-      },
-      {
-        transaction_id: 'mock-tx-2',
-        timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-        description: 'STARBUCKS COFFEE',
-        transaction_type: 'DEBIT',
-        transaction_category: 'Food & Drink',
-        transaction_classification: ['Food', 'Coffee'],
-        amount: -12.50,
-        currency: 'GBP',
-        merchant_name: 'Starbucks',
-        running_balance: {
-          amount: 941.83,
-          currency: 'GBP',
-        },
-      },
-      {
-        transaction_id: 'mock-tx-3',
-        timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
-        description: 'SALARY PAYMENT',
+        transaction_id: 'mock-tx-salary-current',
+        timestamp: new Date(now - 5 * day).toISOString(),
+        description: 'SALARY PAYMENT - ACME CORP',
         transaction_type: 'CREDIT',
         transaction_category: 'Income',
         transaction_classification: ['Salary', 'Income'],
-        amount: 2500.00,
+        amount: 2150.00,
         currency: 'GBP',
-        merchant_name: 'Employer Ltd',
-        running_balance: {
-          amount: 1000.00,
-          currency: 'GBP',
-        },
+        merchant_name: 'Acme Corporation Ltd',
+        running_balance: { amount: 2890.45, currency: 'GBP' },
+      },
+      
+      // Recent outgoings this month
+      {
+        transaction_id: 'mock-tx-rent',
+        timestamp: new Date(now - 1 * day).toISOString(),
+        description: 'RENT PAYMENT - CITY PROPERTIES',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Housing', 'Rent'],
+        amount: -850.00,
+        currency: 'GBP',
+        merchant_name: 'City Properties Ltd',
+        running_balance: { amount: 2040.45, currency: 'GBP' },
       },
       {
-        transaction_id: 'mock-tx-4',
-        timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
-        description: 'AMAZON UK',
+        transaction_id: 'mock-tx-groceries-1',
+        timestamp: new Date(now - 2 * day).toISOString(),
+        description: 'SAINSBURYS STORE 1234',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Food & Drink',
+        transaction_classification: ['Shopping', 'Groceries'],
+        amount: -67.43,
+        currency: 'GBP',
+        merchant_name: 'Sainsburys',
+        running_balance: { amount: 2107.88, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-fuel',
+        timestamp: new Date(now - 3 * day).toISOString(),
+        description: 'SHELL PETROL STATION',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Transport',
+        transaction_classification: ['Transport', 'Fuel'],
+        amount: -58.90,
+        currency: 'GBP',
+        merchant_name: 'Shell',
+        running_balance: { amount: 2166.78, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-council-tax',
+        timestamp: new Date(now - 4 * day).toISOString(),
+        description: 'COUNCIL TAX - CITY COUNCIL',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Bills', 'Tax'],
+        amount: -125.00,
+        currency: 'GBP',
+        merchant_name: 'City Council',
+        running_balance: { amount: 2291.78, currency: 'GBP' },
+      },
+      
+      // Last month's salary (25th of previous month)
+      {
+        transaction_id: 'mock-tx-salary-last',
+        timestamp: new Date(now - 35 * day).toISOString(),
+        description: 'SALARY PAYMENT - ACME CORP',
+        transaction_type: 'CREDIT',
+        transaction_category: 'Income',
+        transaction_classification: ['Salary', 'Income'],
+        amount: 2150.00,
+        currency: 'GBP',
+        merchant_name: 'Acme Corporation Ltd',
+        running_balance: { amount: 2741.45, currency: 'GBP' },
+      },
+      
+      // Last month's outgoings
+      {
+        transaction_id: 'mock-tx-rent-last',
+        timestamp: new Date(now - 31 * day).toISOString(),
+        description: 'RENT PAYMENT - CITY PROPERTIES',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Housing', 'Rent'],
+        amount: -850.00,
+        currency: 'GBP',
+        merchant_name: 'City Properties Ltd',
+        running_balance: { amount: 1891.45, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-electricity',
+        timestamp: new Date(now - 32 * day).toISOString(),
+        description: 'ELECTRICITY BILL - ENERGY CO',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Bills', 'Utilities'],
+        amount: -89.76,
+        currency: 'GBP',
+        merchant_name: 'Energy Company',
+        running_balance: { amount: 1980.21, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-internet',
+        timestamp: new Date(now - 33 * day).toISOString(),
+        description: 'BROADBAND MONTHLY - BT',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Bills', 'Internet'],
+        amount: -29.99,
+        currency: 'GBP',
+        merchant_name: 'BT',
+        running_balance: { amount: 2010.20, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-phone',
+        timestamp: new Date(now - 34 * day).toISOString(),
+        description: 'MOBILE PHONE - THREE UK',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Bills',
+        transaction_classification: ['Bills', 'Phone'],
+        amount: -25.00,
+        currency: 'GBP',
+        merchant_name: 'Three UK',
+        running_balance: { amount: 2035.20, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-groceries-2',
+        timestamp: new Date(now - 36 * day).toISOString(),
+        description: 'TESCO STORES 3294',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Food & Drink',
+        transaction_classification: ['Shopping', 'Groceries'],
+        amount: -72.18,
+        currency: 'GBP',
+        merchant_name: 'Tesco',
+        running_balance: { amount: 2107.38, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-streaming',
+        timestamp: new Date(now - 37 * day).toISOString(),
+        description: 'NETFLIX SUBSCRIPTION',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Entertainment',
+        transaction_classification: ['Entertainment', 'Streaming'],
+        amount: -9.99,
+        currency: 'GBP',
+        merchant_name: 'Netflix',
+        running_balance: { amount: 2117.37, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-coffee',
+        timestamp: new Date(now - 38 * day).toISOString(),
+        description: 'COSTA COFFEE',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Food & Drink',
+        transaction_classification: ['Food', 'Coffee'],
+        amount: -4.25,
+        currency: 'GBP',
+        merchant_name: 'Costa Coffee',
+        running_balance: { amount: 2121.62, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-gym',
+        timestamp: new Date(now - 39 * day).toISOString(),
+        description: 'PUREGYM MEMBERSHIP',
+        transaction_type: 'DEBIT',
+        transaction_category: 'Health & Fitness',
+        transaction_classification: ['Health', 'Gym'],
+        amount: -19.99,
+        currency: 'GBP',
+        merchant_name: 'PureGym',
+        running_balance: { amount: 2141.61, currency: 'GBP' },
+      },
+      {
+        transaction_id: 'mock-tx-amazon',
+        timestamp: new Date(now - 40 * day).toISOString(),
+        description: 'AMAZON UK MARKETPLACE',
         transaction_type: 'DEBIT',
         transaction_category: 'Shopping',
         transaction_classification: ['Shopping', 'Online'],
-        amount: -89.99,
+        amount: -34.99,
         currency: 'GBP',
         merchant_name: 'Amazon',
-        running_balance: {
-          amount: 910.01,
-          currency: 'GBP',
-        },
-      },
-      {
-        transaction_id: 'mock-tx-5',
-        timestamp: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(), // 2 weeks ago
-        description: 'UBER TRIP',
-        transaction_type: 'DEBIT',
-        transaction_category: 'Transport',
-        transaction_classification: ['Transport', 'Taxi'],
-        amount: -23.45,
-        currency: 'GBP',
-        merchant_name: 'Uber',
-        running_balance: {
-          amount: 886.56,
-          currency: 'GBP',
-        },
+        running_balance: { amount: 2176.60, currency: 'GBP' },
       },
     ];
   }
@@ -615,6 +730,12 @@ class TrueLayerDataService {
   async disconnect(): Promise<void> {
     await this.clearStoredTokens();
     console.log('[TL] Disconnected from TrueLayer');
+  }
+
+  // Force switch to mock data for testing
+  async useMockData(): Promise<void> {
+    await this.clearStoredTokens();
+    console.log('[TL] Switched to mock data mode');
   }
 
   // Get cached data without API calls

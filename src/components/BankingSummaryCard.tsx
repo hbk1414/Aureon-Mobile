@@ -29,7 +29,12 @@ export function BankingSummaryCard() {
   // Trigger sync when component mounts
   useEffect(() => {
     console.log('[BankingSummaryCard] Component mounted, triggering sync...');
-    syncAllData();
+    // For testing: automatically switch to comprehensive mock data
+    const initializeData = async () => {
+      await trueLayerDataService.useMockData();
+      syncAllData();
+    };
+    initializeData();
   }, []);
 
   const testAPIConnection = async () => {
@@ -68,6 +73,23 @@ export function BankingSummaryCard() {
     }
   };
 
+  const switchToMockData = async () => {
+    try {
+      await trueLayerDataService.useMockData();
+      Alert.alert(
+        'Mock Data Mode',
+        '✅ Switched to comprehensive mock data!\n\nThis includes realistic monthly salary and expenses for testing.',
+        [{ text: 'OK', onPress: () => syncAllData() }]
+      );
+    } catch (error) {
+      Alert.alert(
+        'Mock Data Error',
+        `❌ Failed to switch to mock data!\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
   if (loading && accounts.length === 0) {
     return (
       <View style={styles.card}>
@@ -84,6 +106,9 @@ export function BankingSummaryCard() {
           <Text style={[styles.dataSourceIndicator, { color: isUsingMockData ? '#FF9F0A' : '#30D158' }]}>
             {isUsingMockData ? '📊 Mock' : '🌐 Live'}
           </Text>
+          <TouchableOpacity onPress={switchToMockData} style={styles.testButton}>
+            <Text style={styles.testButtonText}>📊</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={testAPIConnection} style={styles.testButton}>
             <Text style={styles.testButtonText}>🧪</Text>
           </TouchableOpacity>
