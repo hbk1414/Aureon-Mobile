@@ -222,7 +222,7 @@ function SpendingBreakdownCard() {
       <View style={styles.pieWrap}>
         <TouchablePieChart
           data={pieData}
-          size={280}
+          size={340}
           onSelect={handleSegmentSelect}
         />
         <View style={styles.pieCenter}>
@@ -231,7 +231,7 @@ function SpendingBreakdownCard() {
         </View>
       </View>
 
-      <View style={{ marginTop: 12, gap: 10 }}>
+      <View style={{ marginTop: 20, gap: 16 }}>
         {pieData.map((s, i) => {
           const active = i === selected;
           return (
@@ -965,12 +965,12 @@ const styles = StyleSheet.create({
 
   pieWrap: { alignItems: "center", justifyContent: "center", marginTop: 14 },
   pieCenter: { position: "absolute", alignItems: "center", justifyContent: "center" },
-  centerBig: { fontSize: 22, fontWeight: "600", color: COLORS.text },
-  centerSub: { color: COLORS.mute, fontSize: 14 },
-  legendRow: { flexDirection: "row", alignItems: "center" },
-  legendDot: { width: 10, height: 10, borderRadius: 5, marginRight: 8 },
-  legendLabel: { flex: 1, color: COLORS.text, fontWeight: "600" },
-  legendAmt: { fontWeight: "600", color: COLORS.text },
+  centerBig: { fontSize: 26, fontWeight: "700", color: COLORS.text },
+  centerSub: { color: COLORS.mute, fontSize: 16 },
+  legendRow: { flexDirection: "row", alignItems: "center", paddingVertical: 4 },
+  legendDot: { width: 14, height: 14, borderRadius: 7, marginRight: 12 },
+  legendLabel: { flex: 1, color: COLORS.text, fontWeight: "600", fontSize: 16 },
+  legendAmt: { fontWeight: "700", color: COLORS.text, fontSize: 16 },
 
   detailCard: {
     marginTop: 16,
