@@ -1114,3 +1114,33 @@ export const formatCurrency = (amount: number): string => {
     currency: 'GBP',
   }).format(amount);
 };
+
+// Utility function to format date
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+};
+
+// Utility function to format date and time
+export const formatDateTime = (dateString: string, timeString?: string): string => {
+  const date = new Date(dateString);
+  const formattedDate = date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short'
+  });
+  
+  if (timeString) {
+    return `${formattedDate} ${timeString}`;
+  }
+  
+  const formattedTime = date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+  
+  return `${formattedDate} ${formattedTime}`;
+};
