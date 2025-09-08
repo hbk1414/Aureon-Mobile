@@ -2,8 +2,6 @@ import React, { useMemo, useState, useRef, useEffect } from "react";
 import { SafeAreaView, View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, Animated, Modal, TextInput, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import TouchablePieChart, { Slice } from "../../components/TouchablePieChart";
-import AffordabilitySimulator from "../components/AffordabilitySimulator";
-import { useAffordabilityData } from "../hooks/useAffordabilityData";
 import { 
   useTransactions, 
   useUpcomingBills, 
@@ -561,22 +559,6 @@ function SavingsPotsCard({ onToggle, onCreate, onEdit }: {
   );
 }
 
-/* ---------------- Affordability Simulator ---------------- */
-function AffordabilityCard() {
-  const { balance, transactions, recurrings, isReady } = useAffordabilityData();
-
-  if (!isReady) {
-    return null; // Don't show until data is ready
-  }
-
-  return (
-    <AffordabilitySimulator
-      balance={balance}
-      transactions={transactions}
-      recurrings={recurrings}
-    />
-  );
-}
 
 /* ---------------- Screen ---------------- */
 export default function DashboardClassic({ onConnectBank }: { onConnectBank?: () => void }) {
@@ -851,8 +833,6 @@ export default function DashboardClassic({ onConnectBank }: { onConnectBank?: ()
             </View>
             
             <SpendingBreakdownCard />
-            
-            <AffordabilityCard />
             
             <SavingsPotsCard 
               onToggle={handleSavingsPotsToggle} 
