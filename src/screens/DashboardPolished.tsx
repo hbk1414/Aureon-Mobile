@@ -9,6 +9,9 @@ import {
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTransactions } from "../services/dataService";
+import { generateMicroInsights } from "../ai/insights";
+import { Transaction } from "../types/transaction";
 
 // Conditional import for LinearGradient (mobile only)
 let LinearGradient: any = null;
@@ -157,6 +160,43 @@ function PredictiveCashflow({
   );
 }
 
+/** ---------- Micro Insights Tips ---------- */
+function MicroInsightsTips() {
+  const { transactions } = useTransactions();
+  
+  const insights = React.useMemo(() => {
+    if (!transactions.length) return [];
+    
+    // Convert transactions to the format expected by insights engine
+    const txns = transactions.map((t: Transaction) => ({
+      amount: t.amount,
+      date: t.timestamp,
+      merchant: t.description,
+      is_subscription: t.transaction_category === 'BILL_PAYMENT' || t.description.includes('SUBSCRIPTION')
+    }));
+    
+    return generateMicroInsights(txns);
+  }, [transactions]);
+
+  if (insights.length === 0) return null;
+
+  return (
+    <Card>
+      <Text style={styles.h3}>💡 Smart Tips</Text>
+      <Text style={styles.sub}>Based on your spending patterns</Text>
+      
+      <View style={{ marginTop: S.md }}>
+        {insights.map((tip, index) => (
+          <View key={index} style={[styles.tipRow, index === insights.length - 1 && styles.tipRowLast]}>
+            <View style={[styles.tipDot, { backgroundColor: Apple.blue }]} />
+            <Text style={styles.tipText}>{tip}</Text>
+          </View>
+        ))}
+      </View>
+    </Card>
+  );
+}
+
 /** ---------- Category Row ---------- */
 function CategoryRow({
   color, label, amount, isLast = false,
@@ -253,6 +293,9 @@ export default function DashboardPolished() {
           day30={800}
           threshold={1000}
         />
+
+        {/* Micro Insights Tips */}
+        <MicroInsightsTips />
 
         {/* Top Categories */}
         <Card>
@@ -556,6 +599,32 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: N.text,
+  },
+
+  /** Micro insights tips */
+  tipRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "rgba(15,23,42,0.05)",
+  },
+  tipRowLast: {
+    borderBottomWidth: 0,
+  },
+  tipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 8,
+    marginRight: 12,
+    flexShrink: 0,
+  },
+  tipText: {
+    fontSize: 14,
+    color: N.text,
+    lineHeight: 20,
+    flex: 1,
   },
 });
 
