@@ -10,7 +10,6 @@ import BudgetsGoalsScreen from "../screens/BudgetsGoalsScreen";
 import AIScreen from "../screens/AIScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import BankConnectionScreen from "../screens/BankConnectionScreen";
-import BankingDashboardScreen from "../screens/BankingDashboardScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -94,13 +93,6 @@ export default function AppNavigator() {
           component={AIScreen}
           options={{
             tabBarIcon: ({ focused }) => <TabIcon name="🤖" focused={focused} />,
-          }}
-        />
-        <Tab.Screen
-          name="Banking"
-          component={BankingDashboardScreen}
-          options={{
-            tabBarIcon: ({ focused }) => <TabIcon name="🏦" focused={focused} />,
           }}
         />
         <Tab.Screen
