@@ -60,6 +60,92 @@ function greeting(now = new Date()) {
 }
 
 /* ---------------- Spending Breakdown ---------------- */
+
+// UK-focused categorization function
+const categorizeTransaction = (transaction: Transaction): string => {
+  const desc = transaction.name.toLowerCase();
+  const category = transaction.category;
+  
+  // Housing & Bills 🏠
+  if (desc.includes('rent') || desc.includes('mortgage') || desc.includes('council tax') ||
+      desc.includes('water') || desc.includes('gas') || desc.includes('electric') ||
+      desc.includes('ee & t-mobile') || desc.includes('bt') || desc.includes('sky') ||
+      desc.includes('virgin') || desc.includes('broadband') || desc.includes('phone') ||
+      category === 'BILL_PAYMENT' || category === 'DIRECT_DEBIT') {
+    return 'Housing & Bills 🏠';
+  }
+  
+  // Transport 🚆🚗
+  if (desc.includes('tfl') || desc.includes('tube') || desc.includes('bus') ||
+      desc.includes('train') || desc.includes('rail') || desc.includes('uber') ||
+      desc.includes('taxi') || desc.includes('petrol') || desc.includes('fuel') ||
+      desc.includes('parking') || desc.includes('car park') || desc.includes('transport') ||
+      desc.includes('oyster') || desc.includes('contactless') || desc.includes('national express')) {
+    return 'Transport 🚆🚗';
+  }
+  
+  // Groceries 🛒
+  if (desc.includes('tesco') || desc.includes('asda') || desc.includes('sainsbury') ||
+      desc.includes('morrisons') || desc.includes('lidl') || desc.includes('aldi') ||
+      desc.includes('waitrose') || desc.includes('iceland') || desc.includes('co-op') ||
+      desc.includes('marks & spencer') || desc.includes('m&s') || desc.includes('grocery')) {
+    return 'Groceries 🛒';
+  }
+  
+  // Eating Out & Takeaway 🍔
+  if (desc.includes('mcdonalds') || desc.includes('kfc') || desc.includes('burger king') ||
+      desc.includes('starbucks') || desc.includes('costa') || desc.includes('nandos') ||
+      desc.includes('deliveroo') || desc.includes('uber eats') || desc.includes('just eat') ||
+      desc.includes('restaurant') || desc.includes('cafe') || desc.includes('takeaway') ||
+      desc.includes('pizza') || desc.includes('food') || desc.includes('eating')) {
+    return 'Eating Out & Takeaway 🍔';
+  }
+  
+  // Shopping & Retail 🛍️
+  if (desc.includes('amazon') || desc.includes('ebay') || desc.includes('argos') ||
+      desc.includes('john lewis') || desc.includes('next') || desc.includes('h&m') ||
+      desc.includes('zara') || desc.includes('primark') || desc.includes('currys') ||
+      desc.includes('shopping') || desc.includes('retail') || desc.includes('clothes') ||
+      category === 'PURCHASE') {
+    return 'Shopping & Retail 🛍️';
+  }
+  
+  // Entertainment & Leisure 🎬
+  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('disney') ||
+      desc.includes('amazon prime') || desc.includes('apple music') || desc.includes('youtube') ||
+      desc.includes('cinema') || desc.includes('odeon') || desc.includes('vue') ||
+      desc.includes('cineworld') || desc.includes('gaming') || desc.includes('steam') ||
+      desc.includes('entertainment') || desc.includes('subscription')) {
+    return 'Entertainment & Leisure 🎬';
+  }
+  
+  // Health & Fitness 💪
+  if (desc.includes('gym') || desc.includes('fitness') || desc.includes('pure gym') ||
+      desc.includes('david lloyd') || desc.includes('boots') || desc.includes('pharmacy') ||
+      desc.includes('superdrug') || desc.includes('healthcare') || desc.includes('dental') ||
+      desc.includes('doctor') || desc.includes('medical')) {
+    return 'Health & Fitness 💪';
+  }
+  
+  // Travel & Holidays ✈️
+  if (desc.includes('ryanair') || desc.includes('easyjet') || desc.includes('british airways') ||
+      desc.includes('hotel') || desc.includes('airbnb') || desc.includes('booking.com') ||
+      desc.includes('expedia') || desc.includes('travel') || desc.includes('holiday') ||
+      desc.includes('flight') || desc.includes('airport')) {
+    return 'Travel & Holidays ✈️';
+  }
+  
+  // Finances 💷
+  if (desc.includes('loan') || desc.includes('credit card') || desc.includes('investment') ||
+      desc.includes('savings') || desc.includes('transfer') || desc.includes('payment') ||
+      category === 'TRANSFER' && !desc.includes('shopping')) {
+    return 'Finances 💷';
+  }
+  
+  // Default to Other / Miscellaneous 🔄
+  return 'Other / Miscellaneous 🔄';
+};
+
 function SpendingBreakdownCard() {
   const [selected, setSelected] = useState<number | null>(null);
   const { transactions, loading: transactionsLoading } = useTransactions();
@@ -67,22 +153,22 @@ function SpendingBreakdownCard() {
   const pieData: Slice[] = useMemo(() => {
     if (transactionsLoading || !transactions.length) return [];
     const categoryTotals: { [key: string]: number } = {};
+    
     transactions.forEach(tx => {
       if (tx.amount < 0) {
-        // Temporarily group more transactions into "Purchases" for scroll testing
-        let category = tx.category;
-        if (category === 'TRANSFER' || category === 'DIRECT_DEBIT' || category === 'PURCHASE') {
-          category = 'Purchases & Transfers';
-        }
+        const category = categorizeTransaction(tx);
         categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(tx.amount);
       }
     });
-    const colors = [COLORS.red, COLORS.blue, COLORS.green, COLORS.violet, COLORS.orange];
-    return Object.entries(categoryTotals).map(([label, value], index) => ({
-      label,
-      value,
-      color: colors[index % colors.length]
-    }));
+    
+    const colors = [COLORS.red, COLORS.blue, COLORS.green, COLORS.violet, COLORS.orange, COLORS.purple];
+    return Object.entries(categoryTotals)
+      .sort(([,a], [,b]) => b - a) // Sort by value descending
+      .map(([label, value], index) => ({
+        label,
+        value,
+        color: colors[index % colors.length]
+      }));
   }, [transactions, transactionsLoading]);
 
   const total = useMemo(() => pieData.reduce((s, d) => s + d.value, 0), [pieData]);
@@ -93,12 +179,8 @@ function SpendingBreakdownCard() {
     return transactions.filter(tx => {
       if (tx.amount >= 0) return false;
       
-      // Match the same grouping logic used for categorization
-      let category = tx.category;
-      if (category === 'TRANSFER' || category === 'DIRECT_DEBIT' || category === 'PURCHASE') {
-        category = 'Purchases & Transfers';
-      }
-      
+      // Use the same categorization function
+      const category = categorizeTransaction(tx);
       return category === selectedSlice.label;
     });
   }, [selectedSlice, transactions]);
