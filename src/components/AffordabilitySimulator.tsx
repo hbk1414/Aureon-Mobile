@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image, Modal } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { canIAffordIt, WishItem } from '../ai/affordability';
 import { Txn, Recurring } from '../ai/forecast';
 
@@ -28,6 +30,9 @@ export default function AffordabilitySimulator({
 }: AffordabilitySimulatorProps) {
   const [itemName, setItemName] = useState('');
   const [itemPrice, setItemPrice] = useState('');
+  const [itemUrl, setItemUrl] = useState('');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
   const [wishItems, setWishItems] = useState<WishItem[]>([]);
 
   const addItem = () => {
@@ -46,6 +51,77 @@ export default function AffordabilitySimulator({
     setWishItems([...wishItems, newItem]);
     setItemName('');
     setItemPrice('');
+    setItemUrl('');
+    setSelectedImage(null);
+  };
+
+  const takePicture = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Camera permission is required to take photos');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowImageModal(true);
+    }
+  };
+
+  const pickFromGallery = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Gallery permission is required to select photos');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setSelectedImage(result.assets[0].uri);
+      setShowImageModal(true);
+    }
+  };
+
+  const showImageOptions = () => {
+    Alert.alert(
+      'Add Photo',
+      'How would you like to add a photo?',
+      [
+        { text: 'Camera', onPress: takePicture },
+        { text: 'Gallery', onPress: pickFromGallery },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const extractPriceFromUrl = (url: string) => {
+    // Simple price extraction from URL (basic patterns)
+    const priceMatch = url.match(/[\£$€]?(\d+(?:\.\d{2})?)/);
+    if (priceMatch) {
+      return priceMatch[1];
+    }
+    return '';
+  };
+
+  const handleUrlChange = (url: string) => {
+    setItemUrl(url);
+    const extractedPrice = extractPriceFromUrl(url);
+    if (extractedPrice && !itemPrice) {
+      setItemPrice(extractedPrice);
+    }
   };
 
   const removeItem = (index: number) => {
@@ -106,9 +182,42 @@ export default function AffordabilitySimulator({
             placeholderTextColor={COLORS.mute}
           />
         </View>
-        <TouchableOpacity style={styles.addButton} onPress={addItem}>
-          <Text style={styles.addButtonText}>+ Add</Text>
-        </TouchableOpacity>
+
+        {/* URL Input */}
+        <TextInput
+          style={[styles.input, { marginBottom: 12 }]}
+          placeholder="Paste product URL (optional)"
+          value={itemUrl}
+          onChangeText={handleUrlChange}
+          placeholderTextColor={COLORS.mute}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        {/* Action Buttons */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity style={styles.photoButton} onPress={showImageOptions}>
+            <Ionicons name="camera" size={20} color={COLORS.primary} />
+            <Text style={styles.photoButtonText}>Photo</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.addButton} onPress={addItem}>
+            <Text style={styles.addButtonText}>+ Add to Wishlist</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Selected Image Preview */}
+        {selectedImage && (
+          <View style={styles.imagePreview}>
+            <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+            <TouchableOpacity 
+              style={styles.removeImageButton} 
+              onPress={() => setSelectedImage(null)}
+            >
+              <Ionicons name="close-circle" size={24} color={COLORS.red} />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Wishlist Items */}
@@ -158,6 +267,24 @@ export default function AffordabilitySimulator({
           </View>
         </View>
       )}
+
+      {/* Image Modal */}
+      <Modal visible={showImageModal} transparent animationType="fade">
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Photo captured!</Text>
+            <Text style={styles.modalText}>
+              Add item details and price manually, then tap "Add to Wishlist"
+            </Text>
+            <TouchableOpacity 
+              style={styles.modalButton} 
+              onPress={() => setShowImageModal(false)}
+            >
+              <Text style={styles.modalButtonText}>Got it</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -197,13 +324,91 @@ const styles = StyleSheet.create({
     fontSize: 16,
     backgroundColor: '#FAFBFC',
   },
+  actionRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  photoButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F0F4FF',
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+    borderRadius: 8,
+    padding: 12,
+    flex: 1,
+    gap: 6,
+  },
+  photoButtonText: {
+    color: COLORS.primary,
+    fontWeight: '600',
+    fontSize: 14,
+  },
   addButton: {
     backgroundColor: COLORS.primary,
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
+    flex: 2,
   },
   addButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  imagePreview: {
+    marginTop: 12,
+    position: 'relative',
+    alignSelf: 'flex-start',
+  },
+  previewImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    backgroundColor: '#F5F5F5',
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: -8,
+    right: -8,
+    backgroundColor: 'white',
+    borderRadius: 12,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 24,
+    margin: 20,
+    alignItems: 'center',
+    maxWidth: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  modalText: {
+    fontSize: 14,
+    color: COLORS.mute,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+  },
+  modalButtonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
