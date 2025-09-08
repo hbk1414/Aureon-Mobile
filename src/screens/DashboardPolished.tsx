@@ -11,7 +11,6 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTransactions } from "../services/dataService";
 import { generateMicroInsights } from "../ai/insights";
-import { Transaction } from "../types/transaction";
 
 // Conditional import for LinearGradient (mobile only)
 let LinearGradient: any = null;
@@ -168,10 +167,12 @@ function MicroInsightsTips() {
     if (!transactions.length) return [];
     
     // Convert transactions to the format expected by insights engine
-    const txns = transactions.map((t: Transaction) => ({
+    const txns = transactions.map((t: any, index: number) => ({
+      id: t.transaction_id || `tx-${index}`,
       amount: t.amount,
       date: t.timestamp,
       merchant: t.description,
+      category: t.transaction_category || 'OTHER',
       is_subscription: t.transaction_category === 'BILL_PAYMENT' || t.description.includes('SUBSCRIPTION')
     }));
     
