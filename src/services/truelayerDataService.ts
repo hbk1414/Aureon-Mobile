@@ -385,7 +385,19 @@ class TrueLayerDataService {
     if (!this.accessToken || !this.tokenExpiry) {
       return false;
     }
-    return Date.now() < this.tokenExpiry - 60000; // 1 minute buffer
+    
+    const now = Date.now();
+    const timeUntilExpiry = this.tokenExpiry - now;
+    const isValid = timeUntilExpiry > 30000; // 30 second buffer instead of 1 minute
+    
+    console.log('[TL] Token validity check:', {
+      now: new Date(now).toISOString(),
+      expiry: new Date(this.tokenExpiry).toISOString(),
+      timeUntilExpiry: Math.round(timeUntilExpiry / 1000) + 's',
+      isValid
+    });
+    
+    return isValid;
   }
 
   private async refreshAccessToken(): Promise<boolean> {
@@ -393,6 +405,13 @@ class TrueLayerDataService {
       console.error('[TL] No refresh token available');
       return false;
     }
+
+    console.log('[TL] Attempting token refresh with:', {
+      hasRefreshToken: !!this.refreshToken,
+      refreshTokenLength: this.refreshToken.length,
+      clientId: TRUELAYER_CONFIG.clientId,
+      hasClientSecret: !!TRUELAYER_CONFIG.clientSecret
+    });
 
     try {
       const response = await fetch('https://auth.truelayer-sandbox.com/connect/token', {
@@ -408,9 +427,14 @@ class TrueLayerDataService {
         }),
       });
 
+      console.log('[TL] Refresh response status:', response.status);
+
       if (!response.ok) {
-        console.error('[TL] Token refresh failed:', response.status);
-        await this.clearStoredTokens();
+        const errorText = await response.text();
+        console.error('[TL] Token refresh failed:', response.status, errorText);
+        
+        // Don't clear tokens immediately - let user reconnect manually
+        // await this.clearStoredTokens();
         return false;
       }
 
@@ -420,7 +444,8 @@ class TrueLayerDataService {
       return true;
     } catch (error) {
       console.error('[TL] Token refresh error:', error);
-      await this.clearStoredTokens();
+      // Don't clear tokens immediately - let user reconnect manually
+      // await this.clearStoredTokens();
       return false;
     }
   }
