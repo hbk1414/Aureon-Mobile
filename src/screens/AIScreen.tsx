@@ -5,6 +5,8 @@ import { AIInsightSkeleton } from "../components/SkeletonLoader";
 import { NoAIInsightsEmptyState } from "../components/EmptyState";
 import CashFlowSimulator from "../components/CashFlowSimulator";
 import AIChatbot from "../components/AIChatbot";
+import AffordabilitySimulator from "../components/AffordabilitySimulator";
+import { useAffordabilityData } from "../hooks/useAffordabilityData";
 
 const COLORS = {
   bg: "#F7F8FB",
@@ -21,46 +23,10 @@ const COLORS = {
 };
 
 export default function AIScreen() {
-  const [purchaseAmount, setPurchaseAmount] = useState("");
-  const [purchaseCategory, setPurchaseCategory] = useState("");
-  const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [showChatbot, setShowChatbot] = useState(false);
   const { aiInsights, loading, error } = useAIInsights();
+  const { balance, transactions, recurrings, isReady } = useAffordabilityData();
 
-  const analyzePurchase = () => {
-    if (!purchaseAmount || !purchaseCategory) return;
-
-    const amount = parseFloat(purchaseAmount);
-    const monthlyIncome = 2800; // Mock monthly income in pounds
-    const monthlyExpenses = 1850; // Mock monthly expenses in pounds
-    const availableFunds = monthlyIncome - monthlyExpenses;
-    const percentageOfIncome = (amount / monthlyIncome) * 100;
-    const percentageOfAvailable = (amount / availableFunds) * 100;
-
-    let recommendation = "";
-    let canAfford = true;
-    let risk = "low";
-
-    if (percentageOfIncome > 20) {
-      recommendation = "This purchase represents a significant portion of your income. Consider saving for it over time.";
-      canAfford = false;
-      risk = "high";
-    } else if (percentageOfAvailable > 50) {
-      recommendation = "This purchase uses a large portion of your available funds. Ensure you have emergency savings.";
-      risk = "medium";
-    } else {
-      recommendation = "This purchase fits well within your budget. You can afford it comfortably.";
-    }
-
-    setAnalysisResult({
-      amount,
-      percentageOfIncome,
-      percentageOfAvailable,
-      recommendation,
-      canAfford,
-      risk,
-    });
-  };
 
   const handleInsightAction = (insight: AIInsight) => {
     if (insight.action) {
@@ -121,81 +87,17 @@ export default function AIScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Purchase Impact Analyzer */}
-        <View style={styles.analyzerCard}>
-          <Text style={styles.cardTitle}>Purchase Impact Analyzer</Text>
-          <Text style={styles.cardSubtitle}>"Can I afford it?"</Text>
-
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.amountInput}
-              placeholder="Enter purchase amount ($)"
-              value={purchaseAmount}
-              onChangeText={setPurchaseAmount}
-              keyboardType="numeric"
-              placeholderTextColor={COLORS.mute}
+        {/* Enhanced Affordability Simulator */}
+        <View style={styles.affordabilityCard}>
+          {isReady ? (
+            <AffordabilitySimulator
+              balance={balance}
+              transactions={transactions}
+              recurrings={recurrings}
             />
-
-            <TextInput
-              style={styles.categoryInput}
-              placeholder="Purchase category (e.g., Electronics, Clothing)"
-              value={purchaseCategory}
-              onChangeText={setPurchaseCategory}
-              placeholderTextColor={COLORS.mute}
-            />
-
-            <TouchableOpacity
-              style={styles.analyzeButton}
-              onPress={analyzePurchase}
-            >
-              <Text style={styles.analyzeButtonText}>Analyze Purchase</Text>
-            </TouchableOpacity>
-          </View>
-
-          {analysisResult && (
-            <View style={styles.analysisResult}>
-              <Text style={styles.resultTitle}>Analysis Result</Text>
-
-              <View style={styles.resultStats}>
-                <View style={styles.resultStat}>
-                  <Text style={styles.resultLabel}>Amount</Text>
-                  <Text style={styles.resultValue}>{formatCurrency(analysisResult.amount)}</Text>
-                </View>
-                <View style={styles.resultStat}>
-                  <Text style={styles.resultLabel}>% of Income</Text>
-                  <Text style={styles.resultValue}>{analysisResult.percentageOfIncome.toFixed(1)}%</Text>
-                </View>
-                <View style={styles.resultStat}>
-                  <Text style={styles.resultLabel}>% of Available</Text>
-                  <Text style={styles.resultValue}>{analysisResult.percentageOfAvailable.toFixed(1)}%</Text>
-                </View>
-              </View>
-
-              <View style={[
-                styles.affordabilityBadge,
-                { backgroundColor: analysisResult.canAfford ? COLORS.green + "20" : COLORS.red + "20" }
-              ]}>
-                <Text style={[
-                  styles.affordabilityText,
-                  { color: analysisResult.canAfford ? COLORS.green : COLORS.red }
-                ]}>
-                  {analysisResult.canAfford ? "✅ Can Afford" : "❌ Cannot Afford"}
-                </Text>
-              </View>
-
-              <View style={[
-                styles.riskBadge,
-                { backgroundColor: getRiskColor(analysisResult.risk) + "20" }
-              ]}>
-                <Text style={[
-                  styles.riskText,
-                  { color: getRiskColor(analysisResult.risk) }
-                ]}>
-                  Risk Level: {analysisResult.risk.toUpperCase()}
-                </Text>
-              </View>
-
-              <Text style={styles.recommendationText}>{analysisResult.recommendation}</Text>
+          ) : (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Loading your financial data...</Text>
             </View>
           )}
         </View>
@@ -351,14 +253,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: COLORS.mute,
   },
-  analyzerCard: {
-    backgroundColor: COLORS.card,
-    borderRadius: 16,
-    padding: 20,
+  affordabilityCard: {
     marginHorizontal: 20,
     marginBottom: 20,
+  },
+  loadingContainer: {
+    backgroundColor: COLORS.card,
+    borderRadius: 16,
+    padding: 40,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: COLORS.border,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: COLORS.mute,
+    fontWeight: '500',
   },
   cardTitle: {
     fontSize: 20,
@@ -370,99 +280,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: COLORS.mute,
     marginBottom: 20,
-  },
-  inputContainer: {
-    gap: 16,
-  },
-  amountInput: {
-    backgroundColor: COLORS.bg,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  categoryInput: {
-    backgroundColor: COLORS.bg,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: COLORS.text,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  analyzeButton: {
-    backgroundColor: COLORS.blue,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: "center",
-  },
-  analyzeButtonText: {
-    color: COLORS.card,
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  analysisResult: {
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  resultTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: COLORS.text,
-    marginBottom: 16,
-  },
-  resultStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  resultStat: {
-    alignItems: "center",
-    flex: 1,
-  },
-  resultLabel: {
-    fontSize: 12,
-    color: COLORS.mute,
-    marginBottom: 4,
-  },
-  resultValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.text,
-  },
-  affordabilityBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  affordabilityText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  riskBadge: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  riskText: {
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  recommendationText: {
-    fontSize: 14,
-    color: COLORS.text,
-    lineHeight: 20,
-    textAlign: "center",
   },
   simulatorCard: {
     marginHorizontal: 20,
