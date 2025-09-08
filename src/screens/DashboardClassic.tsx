@@ -223,6 +223,7 @@ function SpendingBreakdownCard() {
         <TouchablePieChart
           data={pieData}
           size={340}
+          innerRadius={110}
           onSelect={handleSegmentSelect}
         />
         <View style={styles.pieCenter}>
