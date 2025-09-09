@@ -286,6 +286,7 @@ function CategoryRow({
 
 /** ---------- Top Categories with Pie Chart ---------- */
 function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
+  const [selectedSegment, setSelectedSegment] = React.useState<number | null>(null);
   const categoryData = React.useMemo(() => {
     console.log('[PieChart] Processing transactions:', transactions?.length || 0);
     
@@ -339,6 +340,20 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     return data;
   }, [categoryData]);
 
+  const selectedSlice = selectedSegment != null ? pieData[selectedSegment] : null;
+  const selectedTransactions = React.useMemo(() => {
+    if (!selectedSlice) return [];
+    return transactions.filter(tx => {
+      if (tx.amount >= 0) return false; // Only expenses
+      const category = categorizeTransaction(tx);
+      return category === selectedSlice.label;
+    });
+  }, [selectedSlice, transactions]);
+
+  const handleSegmentSelect = (index: number) => {
+    setSelectedSegment(prev => (prev === index ? null : index));
+  };
+
   const total = categoryData.reduce((sum, [, amount]) => sum + amount, 0);
 
   if (!categoryData.length) {
@@ -363,7 +378,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
           data={pieData}
           size={280}
           innerRadius={90}
-          onSelect={(index) => console.log('Selected:', pieData[index]?.label)}
+          onSelect={handleSegmentSelect}
         />
         <View style={styles.pieCenter}>
           <Text style={styles.centerBig}>£{total.toLocaleString()}</Text>
@@ -373,16 +388,68 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
 
       {/* Category List */}
       <View style={{ marginTop: 20 }}>
-        {categoryData.map(([category, amount], index) => (
-          <CategoryRow
-            key={category}
-            color={pieData[index]?.color || Apple.purple}
-            label={category}
-            amount={amount}
-            isLast={index === categoryData.length - 1}
-          />
-        ))}
+        {categoryData.map(([category, amount], index) => {
+          const isActive = index === selectedSegment;
+          return (
+            <Pressable
+              key={category}
+              onPress={() => handleSegmentSelect(index)}
+              style={[
+                styles.categoryRowPress,
+                isActive && { backgroundColor: 'rgba(0, 122, 255, 0.1)' }
+              ]}
+            >
+              <CategoryRow
+                color={pieData[index]?.color || Apple.purple}
+                label={category}
+                amount={amount}
+                isLast={index === categoryData.length - 1}
+              />
+            </Pressable>
+          );
+        })}
       </View>
+
+      {/* Transaction Details */}
+      {selectedSlice && selectedTransactions.length > 0 && (
+        <View style={[
+          styles.detailCard,
+          { borderLeftColor: selectedSlice.color, marginTop: 16 }
+        ]}>
+          <Text style={styles.detailTitle}>
+            {selectedSlice.label} • {selectedTransactions.length} transaction{selectedTransactions.length !== 1 ? 's' : ''}
+          </Text>
+          
+          <ScrollView
+            style={{
+              maxHeight: 180,
+              borderRadius: 8,
+              backgroundColor: 'rgba(0,0,0,0.02)',
+              paddingHorizontal: 8,
+              marginTop: 8,
+            }}
+            contentContainerStyle={{ paddingVertical: 8 }}
+            showsVerticalScrollIndicator={true}
+            nestedScrollEnabled={true}
+          >
+            {selectedTransactions
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .map((tx, index) => (
+                <View key={tx.id || index}>
+                  {index > 0 && <View style={styles.txSeparator} />}
+                  <View style={styles.txRow}>
+                    <View style={styles.txCol}>
+                      <Text style={styles.txName}>{tx.name || 'Unknown transaction'}</Text>
+                      <Text style={styles.txMeta}>{tx.date} • {tx.time}</Text>
+                    </View>
+                    <Text style={styles.txAmount}>{formatCurrency(tx.amount)}</Text>
+                  </View>
+                </View>
+              ))
+            }
+          </ScrollView>
+        </View>
+      )}
     </Card>
   );
 }
@@ -833,6 +900,40 @@ const styles = StyleSheet.create({
     color: N.text,
     lineHeight: 20,
     flex: 1,
+  },
+  
+  // Interactive transaction details
+  categoryRowPress: {
+    borderRadius: 8,
+    marginBottom: 1,
+  },
+  detailCard: {
+    backgroundColor: CARD_BG,
+    borderRadius: R,
+    padding: 16,
+    borderLeftWidth: 4,
+    ...SHADOW,
+  },
+  detailTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: N.text,
+    marginBottom: 8,
+  },
+  txRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  txCol: {
+    flex: 1,
+  },
+  txSeparator: {
+    height: 1,
+    backgroundColor: N.border,
+    marginHorizontal: 4,
   },
 });
 
