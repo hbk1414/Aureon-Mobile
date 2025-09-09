@@ -43,6 +43,9 @@ export default function CompactAIAgent() {
       timestamp: new Date(),
     },
   ]);
+
+  // Debug log to see if component is rendering
+  console.log('[CompactAIAgent] Component rendered, isExpanded:', isExpanded);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
@@ -265,11 +268,11 @@ export default function CompactAIAgent() {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    right: 0,
-    top: "50%",
-    marginTop: -200,
+    right: 16,
+    top: 100,
     height: 400,
-    zIndex: 1000,
+    zIndex: 9999,
+    elevation: 10, // Android elevation
   },
   
   // Arrow button (collapsed state)
@@ -281,6 +284,8 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 28,
     justifyContent: "center",
     alignItems: "center",
+    borderWidth: 2, // Add border for debugging
+    borderColor: 'red', // Make it very visible for debugging
     ...Platform.select({
       ios: {
         shadowColor: "#000",
