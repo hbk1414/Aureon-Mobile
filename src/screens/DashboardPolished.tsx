@@ -289,10 +289,20 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
       return [];
     }
     
+    // Log a few sample transactions to see the structure
+    console.log('[PieChart] Sample transactions:', transactions.slice(0, 3));
+    
     const categoryTotals: Record<string, number> = {};
     
-    transactions.forEach((transaction) => {
+    transactions.forEach((transaction, index) => {
       if (transaction.amount < 0) { // Only count expenses
+        if (index < 5) {
+          console.log('[PieChart] Processing transaction:', {
+            description: transaction.description,
+            amount: transaction.amount,
+            category: transaction.transaction_category
+          });
+        }
         const category = categorizeTransaction(transaction);
         categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(transaction.amount);
       }
