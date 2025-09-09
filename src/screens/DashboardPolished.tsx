@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTransactions } from "../services/dataService";
 import { generateMicroInsights } from "../ai/insights";
+import CompactAIAgent from "../components/CompactAIAgent";
 
 // Conditional import for LinearGradient (mobile only)
 let LinearGradient: any = null;
@@ -348,6 +349,9 @@ export default function DashboardPolished() {
         <TxRow iconBg={Apple.violet + "22"} name="Netflix"        meta="2 days ago • $15.99" tag="Media"     amount="$15.99" />
         <TxRow iconBg={Apple.green + "22"}  name="Salary Deposit" meta="1 day ago"           amount="+$3500.00" positive />
       </ScrollView>
+      
+      {/* Compact AI Agent - Floating on the right side */}
+      <CompactAIAgent />
     </SafeAreaView>
   );
 }
