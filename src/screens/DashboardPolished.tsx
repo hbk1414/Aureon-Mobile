@@ -303,18 +303,18 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     
     const categoryTotals: Record<string, number> = {};
     
-    transactions.forEach((transaction, index) => {
+    // Use pre-categorized transactions for better performance
+    categorizedTransactions.forEach((transaction, index) => {
       if (transaction.amount < 0) { // Only count expenses
         if (index < 5) {
           console.log('[PieChart] Processing transaction:', {
             name: transaction.name,
             amount: transaction.amount,
             merchant: transaction.merchant,
-            category: transaction.category
+            category: transaction.categoryLabel
           });
         }
-        const category = categorizeTransaction(transaction);
-        categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(transaction.amount);
+        categoryTotals[transaction.categoryLabel] = (categoryTotals[transaction.categoryLabel] || 0) + Math.abs(transaction.amount);
       }
     });
     
@@ -327,7 +327,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     
     console.log('[PieChart] Sorted categories:', sorted);
     return sorted;
-  }, [transactions]);
+  }, [categorizedTransactions]);
 
   const pieData: Slice[] = React.useMemo(() => {
     const colors = [Apple.blue, Apple.violet, Apple.green, Apple.orange, Apple.pink, Apple.yellow];
@@ -340,15 +340,22 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     return data;
   }, [categoryData]);
 
+  // Pre-categorize all transactions once for better performance
+  const categorizedTransactions = React.useMemo(() => {
+    return transactions.map(tx => ({
+      ...tx,
+      categoryLabel: categorizeTransaction(tx)
+    }));
+  }, [transactions]);
+
   const selectedSlice = selectedSegment != null ? pieData[selectedSegment] : null;
   const selectedTransactions = React.useMemo(() => {
     if (!selectedSlice) return [];
-    return transactions.filter(tx => {
-      if (tx.amount >= 0) return false; // Only expenses
-      const category = categorizeTransaction(tx);
-      return category === selectedSlice.label;
-    });
-  }, [selectedSlice, transactions]);
+    return categorizedTransactions
+      .filter(tx => tx.amount < 0 && tx.categoryLabel === selectedSlice.label)
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 20); // Limit to 20 most recent transactions for performance
+  }, [selectedSlice, categorizedTransactions]);
 
   const handleSegmentSelect = (index: number) => {
     setSelectedSegment(prev => (prev === index ? null : index));
@@ -417,7 +424,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
           { borderLeftColor: selectedSlice.color, marginTop: 16 }
         ]}>
           <Text style={styles.detailTitle}>
-            {selectedSlice.label} • {selectedTransactions.length} transaction{selectedTransactions.length !== 1 ? 's' : ''}
+            {selectedSlice.label} • {selectedTransactions.length}{selectedTransactions.length === 20 ? '+' : ''} transaction{selectedTransactions.length !== 1 ? 's' : ''}
           </Text>
           
           <ScrollView
@@ -432,9 +439,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
             showsVerticalScrollIndicator={true}
             nestedScrollEnabled={true}
           >
-            {selectedTransactions
-              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-              .map((tx, index) => (
+            {selectedTransactions.map((tx, index) => (
                 <View key={tx.id || index}>
                   {index > 0 && <View style={styles.txSeparator} />}
                   <View style={styles.txRow}>
