@@ -7,10 +7,8 @@ import {
   TouchableOpacity, 
   ScrollView, 
   Animated, 
-  Platform, 
-  Pressable 
+  Platform 
 } from "react-native";
-import { useTransactions, useBudgetCategories, useUpcomingBills, formatCurrency } from "../services/dataService";
 
 const COLORS = {
   bg: "#F7F8FB",
@@ -307,122 +305,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
-  },
-});
-      ios: {
-        shadowColor: "#000",
-        shadowOpacity: 0.1,
-        shadowRadius: 12,
-        shadowOffset: { width: -4, height: 0 },
-      },
-      android: { elevation: 6 },
-      web: { boxShadow: "-4px 0px 12px rgba(0,0,0,0.1)" },
-    }),
-  },
-  
-  // Header
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.text,
-  },
-  closeButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.border,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  closeText: {
-    fontSize: 18,
-    color: COLORS.mute,
-    fontWeight: "500",
-  },
-  
-  // Messages
-  messagesContainer: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  messageContainer: {
-    marginVertical: 4,
-    maxWidth: "85%",
-  },
-  userMessage: {
-    alignSelf: "flex-end",
-    backgroundColor: COLORS.blue,
-    borderRadius: 16,
-    borderBottomRightRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  aiMessage: {
-    alignSelf: "flex-start",
-    backgroundColor: COLORS.border,
-    borderRadius: 16,
-    borderBottomLeftRadius: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
-  messageText: {
-    fontSize: 14,
-    lineHeight: 18,
-  },
-  userMessageText: {
-    color: "white",
-  },
-  aiMessageText: {
-    color: COLORS.text,
-  },
-  typingText: {
-    fontSize: 14,
-    color: COLORS.mute,
-    fontStyle: "italic",
-  },
-  
-  // Input
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  textInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    color: COLORS.text,
-    maxHeight: 80,
-    marginRight: 8,
-  },
-  sendButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: COLORS.blue,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sendText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "500",
   },
 });
