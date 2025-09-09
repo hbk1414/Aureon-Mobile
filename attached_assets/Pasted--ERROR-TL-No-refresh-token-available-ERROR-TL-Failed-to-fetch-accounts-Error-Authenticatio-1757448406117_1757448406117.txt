@@ -1,0 +1,25 @@
+ ERROR  [TL] No refresh token available
+ ERROR  [TL] Failed to fetch accounts: [Error: Authentication failed - please reconnect your bank]
+ ERROR  Error fetching transactions: [Error: No accounts available]
+ ERROR  Error generating upcoming bills: [Error: No accounts available]
+ ERROR  Error calculating monthly trends: [Error: No accounts available]
+ ERROR  Error fetching transactions: [Error: No accounts available]
+ ERROR  Error generating upcoming bills: [Error: No accounts available]
+ ERROR  Error fetching transactions: [Error: No accounts available]
+ LOG  Starting OAuth flow for: Mock Bank
+ LOG  [TL] authorize URL: https://auth.truelayer-sandbox.com/?response_type=code&client_id=sandbox-aureon-52c96f&redirect_uri=aureonmobile%3A%2F%2Foauth%2Fcallback&scope=info+accounts+balance+transactions+offline_access&state=9r2bg82dlmk&provider_id=mock&code_challenge=VntdsFZLidP1vEKJ3ILOXXwlSUlnvudyIAb0H5x2Ofg&code_challenge_method=S256
+ LOG  OAuth result: {"error": null, "type": "success", "url": "aureonmobile://oauth/callback?code=688EFCC8233029C322A7B4389D7DBAB9EDE4F5A4ED6229E5CC2387D7134D9F2A&scope=info%20accounts%20balance%20transactions%20offline_access&state=9r2bg82dlmk"}
+ LOG  OAuth code received, exchanging for tokens...
+ LOG  [TL] token exchange {"client_id": "sandbox-aureon-52c96f", "code_len": 64, "redirect_uri": "aureonmobile://oauth/callback", "verifier_len": 64}
+ LOG  [TL] token request body: grant_type=authorization_code&client_id=sandbox-aureon-52c96f&client_secret=019bcc14-faad-4806-b6ef-abbd56034f30&redirect_uri=aureonmobile%3A%2F%2Foauth%2Fcallback&code=688EFCC8233029C322A7B4389D7DBAB9EDE4F5A4ED6229E5CC2387D7134D9F2A&code_verifier=AiNT7LbEcDd6CmC5Cnn02mTkNS2-yv%7EstaM0qn3bRYope8m9pheMkajVbr.c51E8
+ LOG  [TL] token response status: 200
+ LOG  [TL] token response: {"access_token":"eyJhbGciOiJSUzI1NiIsImtpZCI6IjE0NTk4OUIwNTdDOUMzMzg0MDc4MDBBOEJBNkNCOUZFQjMzRTk1MTBSUzI1NiIsIng1dCI6IkZGbUpzRmZKd3poQWVBQ291bXk1X3JNLWxSQSIsInR5cCI6ImF0K2p3dCJ9.eyJpc3MiOiJodHRwczovL2F1dGgudHJ1ZWxheWVyLXNhbmRib3guY29tIiwibmJmIjoxNzU3NDQ4Mzc1LCJpYXQiOjE3NTc0NDgzNzUsImV4cCI6MTc1NzQ1MTk3NSwiYXVkIjoiZGF0YV9hcGkiLCJzY29wZSI6WyJpbmZvIiwiYWNjb3VudHMiLCJiYWxhbmNlIiwidHJhbnNhY3Rpb25zIiwib2ZmbGluZV9hY2Nlc3MiXSwiYW1yIjpbInB3ZCJdLCJjbGllbnRfaWQiOiJzYW5kYm94LWF1cmVvbi01MmM5NmYiLCJzdWIiOiJ0T0RtUlRuUzRqNjZveXo3RGNlMGtEaFFRdVNnNkx5ZHkxQzgxL2x4aU9RPSIsImF1dGhfdGltZSI6MTc1NzQ0ODM3NSwiaWRwIjoibG9jYWwiLCJzaWQiOiJhZnNzLWExSEpkX3c3a1pIN2FnSnpQQVJ1Ql90WmVHRkhtbm0zLXpvQlptdTdUekEiLCJjb25uZWN0b3JfaWQiOiJtb2NrIiwiY3JlZGVudGlhbHNfa2V5IjoiMjM0MTJkNmFlYWJjODc4MTc0NWRkMjUyNzc2Y2YxMTU5MDhiNzczMjZjY2RhZmQwNGY1MzFjYTFmOGNmYWEzZCIsInByaXZhY3lfcG9saWN5IjoiU2VwMjAyMyIsImNvbnNlbnRfaWQiOiJlZDkzZmNmZC0yZTFkLTRkNjYtOGRjMC02YmRmZGE3ZTQ1NjgiLCJjb25zZW50X2V4cGlyeV90aW1lIjoxNzY1MjI0Mzc1LCJjb25uZWN0aW9uX2lkIjoiMDEwZWM2YTQtMTUyZi00YzYxLTk2YWYtMzA0YzA1YTZiMmY3IiwianRpIjoiNzk1RUI3MUZFODE2MzAzNjgyQzIxOEM3Nzk3RTJGQjIifQ.v8fMw_XiyQ1IwIe_XWSVzDevDVrcULBZY8ygRdJojGqZDk6qum-L4vUe-LndWUDYpcpCtsbd0lrIyYemApxm7X4hj2Hl_15ThLP391lzuxnDZH-4Tj5SmMQHI5jAwtNsvgNXmOA6KMv5-jq15mF3GLWHwQSwrGnKqSJmDwfMZZGh4_usHkI5YuE583NEM_-UYwVyevAtAUlzpV-X1Vd-PK85iC0HBlz9_av3kEBO14aZSdT-FOxc8tP3Ig3NvLrCrDz-T644Smy4y5zFUDnPSdqP3HXy0bSfn0rHHM6dKa8KS76O6FWDz9O73jmkl5ITjuFWNGrRRtsvks7KG4IlDg","expires_in":3600,"token_type":"Bearer","refresh_token":"AA502F3F116E10FDA09B71E172A808D30A1953FCD6F4397A0BFE89DBFE5223B7","scope":"info accounts balance transactions offline_access"}
+ LOG  [TL] token ok scopes: info accounts balance transactions offline_access
+ LOG  [TL] token response keys: ["access_token", "expires_in", "token_type", "refresh_token", "scope"]
+ LOG  [TL] has refresh_token: true
+ LOG  [TL] refresh_token length: 64
+ LOG  [TL] Storing tokens: {"expiresIn": 3600, "hasAccessToken": true, "hasRefreshToken": true, "scope": "info accounts balance transactions offline_access"}
+ LOG  [TL] Tokens stored successfully
+ LOG  [TL] Token expiry: 2025-09-09T21:06:16.017Z
+ ERROR  Error fetching transactions: [Error: No accounts available]
+ ERROR  Error calculating monthly trends: [Error: No accounts available]

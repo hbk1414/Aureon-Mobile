@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { SafeAreaView, View, Text, StyleSheet, FlatList, ScrollView, TouchableOpacity, Animated, Modal, TextInput, Image } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
+import CompactAIAgent from "../components/CompactAIAgent";
 import TouchablePieChart, { Slice } from "../../components/TouchablePieChart";
 import { 
   useTransactions, 
@@ -945,6 +946,9 @@ export default function DashboardClassic({ onConnectBank }: { onConnectBank?: ()
       >
         <TrendsDetailScreen onClose={() => setShowTrendsDetail(false)} />
       </Modal>
+      
+      {/* Compact AI Agent - Floating on the right side */}
+      <CompactAIAgent />
     </SafeAreaView>
   );
 }
