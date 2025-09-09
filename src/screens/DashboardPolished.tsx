@@ -9,9 +9,10 @@ import {
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTransactions } from "../services/dataService";
+import { useTransactions, useCurrentBalance, formatCurrency } from "../services/dataService";
 import { generateMicroInsights } from "../ai/insights";
 import CompactAIAgent from "../components/CompactAIAgent";
+import TouchablePieChart, { Slice } from "../../components/TouchablePieChart";
 
 // Conditional import for LinearGradient (mobile only)
 let LinearGradient: any = null;
@@ -62,6 +63,60 @@ const SHADOW = Platform.select({
     boxShadow: "0px 10px 18px rgba(0,0,0,0.06)",
   },
 });
+
+/** ---------- Greeting Function ---------- */
+function greeting(now = new Date()) {
+  const h = now.getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+/** ---------- UK-focused categorization ---------- */
+const categorizeTransaction = (transaction: any): string => {
+  const desc = transaction.description?.toLowerCase() || '';
+  const category = transaction.transaction_category;
+  
+  // Housing & Bills 🏠
+  if (desc.includes('rent') || desc.includes('mortgage') || desc.includes('council tax') ||
+      desc.includes('gas') || desc.includes('electric') || desc.includes('water') ||
+      desc.includes('internet') || desc.includes('broadband') || desc.includes('phone') ||
+      category === 'BILL_PAYMENT' || category === 'DIRECT_DEBIT') {
+    return 'Housing & Bills';
+  }
+  
+  // Food & Groceries 🛒
+  if (desc.includes('tesco') || desc.includes('sainsbury') || desc.includes('asda') ||
+      desc.includes('morrisons') || desc.includes('aldi') || desc.includes('lidl') ||
+      desc.includes('waitrose') || desc.includes('co-op') || desc.includes('iceland') ||
+      desc.includes('marks spencer') || desc.includes('m&s') || category === 'PURCHASE') {
+    return 'Food & Groceries';
+  }
+  
+  // Transportation 🚗
+  if (desc.includes('uber') || desc.includes('taxi') || desc.includes('bus') ||
+      desc.includes('train') || desc.includes('tube') || desc.includes('oyster') ||
+      desc.includes('tfl') || desc.includes('petrol') || desc.includes('bp') ||
+      desc.includes('shell') || desc.includes('esso') || desc.includes('dvla')) {
+    return 'Transportation';
+  }
+  
+  // Entertainment & Dining 🍽️
+  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('amazon prime') ||
+      desc.includes('restaurant') || desc.includes('pub') || desc.includes('cinema') ||
+      desc.includes('deliveroo') || desc.includes('just eat') || desc.includes('uber eats')) {
+    return 'Entertainment & Dining';
+  }
+  
+  // Shopping & Retail 🛍️
+  if (desc.includes('amazon') || desc.includes('ebay') || desc.includes('argos') ||
+      desc.includes('john lewis') || desc.includes('next') || desc.includes('zara') ||
+      desc.includes('h&m') || desc.includes('primark') || desc.includes('boots')) {
+    return 'Shopping & Retail';
+  }
+  
+  return 'Other';
+};
 
 /** ---------- Glass Card ---------- */
 function Card({ children, style }: { children: React.ReactNode; style?: any }) {
@@ -207,8 +262,84 @@ function CategoryRow({
     <View style={[styles.catRow, isLast && styles.catRowLast]}>
       <View style={[styles.dot, { backgroundColor: color }]} />
       <Text style={styles.catLabel}>{label}</Text>
-      <Text style={styles.catAmt}>${amount.toLocaleString()}</Text>
+      <Text style={styles.catAmt}>£{amount.toLocaleString()}</Text>
     </View>
+  );
+}
+
+/** ---------- Top Categories with Pie Chart ---------- */
+function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
+  const categoryData = React.useMemo(() => {
+    if (!transactions.length) return [];
+    
+    const categoryTotals: Record<string, number> = {};
+    
+    transactions.forEach((transaction) => {
+      if (transaction.amount < 0) { // Only count expenses
+        const category = categorizeTransaction(transaction);
+        categoryTotals[category] = (categoryTotals[category] || 0) + Math.abs(transaction.amount);
+      }
+    });
+    
+    // Convert to array and sort by amount
+    const sorted = Object.entries(categoryTotals)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 6); // Top 6 categories
+    
+    return sorted;
+  }, [transactions]);
+
+  const pieData: Slice[] = React.useMemo(() => {
+    const colors = [Apple.blue, Apple.violet, Apple.green, Apple.orange, Apple.pink, Apple.yellow];
+    return categoryData.map(([category, amount], index) => ({
+      label: category,
+      value: amount,
+      color: colors[index] || Apple.purple,
+    }));
+  }, [categoryData]);
+
+  const total = categoryData.reduce((sum, [, amount]) => sum + amount, 0);
+
+  if (!categoryData.length) {
+    return (
+      <Card>
+        <Section title="Top Categories" />
+        <Text style={styles.muted}>No spending data available</Text>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Section title="Top Categories" />
+      
+      {/* Pie Chart */}
+      <View style={styles.pieWrap}>
+        <TouchablePieChart
+          data={pieData}
+          size={280}
+          innerRadius={90}
+          onSelect={(index) => console.log('Selected:', pieData[index]?.label)}
+        />
+        <View style={styles.pieCenter}>
+          <Text style={styles.centerBig}>£{total.toLocaleString()}</Text>
+          <Text style={styles.centerSub}>Total spent</Text>
+        </View>
+      </View>
+
+      {/* Category List */}
+      <View style={{ marginTop: 20 }}>
+        {categoryData.map(([category, amount], index) => (
+          <CategoryRow
+            key={category}
+            color={pieData[index]?.color || Apple.purple}
+            label={category}
+            amount={amount}
+            isLast={index === categoryData.length - 1}
+          />
+        ))}
+      </View>
+    </Card>
   );
 }
 
@@ -270,9 +401,25 @@ function BudgetItem({ label, used, total, color }:{
 
 /** ---------- Screen ---------- */
 export default function DashboardPolished() {
+  const { balance, loading: balanceLoading } = useCurrentBalance();
+  const { transactions } = useTransactions();
+  
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: N.bg }}>
       <ScrollView contentContainerStyle={styles.cc}>
+        {/* Greeting with Balance */}
+        <Card>
+          <Text style={styles.h1}>
+            {greeting()} <Text style={{ color: Apple.blue }}>there</Text> 👋
+          </Text>
+          <Text style={styles.muted}>Balance is currently</Text>
+          {balanceLoading ? (
+            <Text style={styles.h2}>Loading...</Text>
+          ) : (
+            <Text style={styles.balance}>{formatCurrency(balance)}</Text>
+          )}
+        </Card>
+
         {/* Top KPIs / Actions */}
         <Card>
           <Text style={styles.h2}>At a glance</Text>
@@ -300,13 +447,7 @@ export default function DashboardPolished() {
         <MicroInsightsTips />
 
         {/* Top Categories */}
-        <Card>
-          <Section title="Top Categories" />
-          <CategoryRow color={Apple.blue}   label="Food & Dining" amount={450} />
-          <CategoryRow color={Apple.violet} label="Shopping"      amount={380} />
-          <CategoryRow color={Apple.green}  label="Transport"     amount={280} />
-          <CategoryRow color={Apple.orange} label="Entertainment" amount={220} isLast />
-        </Card>
+        <TopCategoriesWithChart transactions={transactions || []} />
 
         {/* Quick Actions */}
         <Card>
@@ -386,6 +527,40 @@ const styles = StyleSheet.create({
     color: "#667085", 
     marginTop: 4,
     flexWrap: "wrap", // Allow text wrapping
+  },
+  muted: {
+    color: "#667085",
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  balance: {
+    fontSize: 32,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: -1,
+  },
+  pieWrap: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 20,
+    position: "relative",
+  },
+  pieCenter: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  centerBig: {
+    fontSize: 24,
+    fontWeight: "800",
+    color: "#0F172A",
+    textAlign: "center",
+  },
+  centerSub: {
+    fontSize: 14,
+    color: "#667085",
+    textAlign: "center",
+    marginTop: 2,
   },
 
   card: {
