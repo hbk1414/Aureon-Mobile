@@ -5,6 +5,7 @@ import { Text, View, Modal } from "react-native";
 
 // Import screens
 import DashboardClassic from "../screens/DashboardClassic";
+import DashboardPolished from "../screens/DashboardPolished";
 import TransactionsScreen from "../screens/TransactionsScreen";
 import BudgetsGoalsScreen from "../screens/BudgetsGoalsScreen";
 import AIScreen from "../screens/AIScreen";
@@ -69,7 +70,7 @@ export default function AppNavigator() {
       >
         <Tab.Screen
           name="Home"
-          component={DashboardWithBankConnection}
+          component={DashboardPolished}
           options={{
             tabBarIcon: ({ focused }) => <TabIcon name="🏠" focused={focused} />,
           }}
