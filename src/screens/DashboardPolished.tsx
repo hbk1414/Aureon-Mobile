@@ -75,53 +75,57 @@ function greeting(now = new Date()) {
 /** ---------- UK-focused categorization ---------- */
 const categorizeTransaction = (transaction: any): string => {
   const desc = transaction.description?.toLowerCase() || '';
-  const category = transaction.transaction_category;
+  const merchant = transaction.merchant_name?.toLowerCase() || '';
+  const searchText = `${desc} ${merchant}`.toLowerCase();
   
-  console.log('[Categorization] Processing:', desc, 'Category:', category);
+  console.log('[Categorization] Processing:', { 
+    desc: desc.substring(0, 30), 
+    merchant: merchant.substring(0, 30) 
+  });
   
   // Housing & Bills 🏠
-  if (desc.includes('dvla') || desc.includes('licence') || desc.includes('rent') || 
-      desc.includes('mortgage') || desc.includes('council') || desc.includes('gas') || 
-      desc.includes('electric') || desc.includes('water') || desc.includes('internet') || 
-      desc.includes('broadband') || desc.includes('phone') || desc.includes('bill') ||
-      category === 'BILL_PAYMENT' || category === 'DIRECT_DEBIT') {
+  if (searchText.includes('dvla') || searchText.includes('licence') || searchText.includes('rent') || 
+      searchText.includes('mortgage') || searchText.includes('council') || searchText.includes('gas') || 
+      searchText.includes('electric') || searchText.includes('water') || searchText.includes('internet') || 
+      searchText.includes('broadband') || searchText.includes('phone') || searchText.includes('bill') ||
+      transaction.transaction_category === 'BILL_PAYMENT' || transaction.transaction_category === 'DIRECT_DEBIT') {
     console.log('[Categorization] -> Housing & Bills');
     return 'Housing & Bills';
   }
   
   // Food & Groceries 🛒
-  if (desc.includes('tesco') || desc.includes('sainsbury') || desc.includes('asda') ||
-      desc.includes('morrisons') || desc.includes('aldi') || desc.includes('lidl') ||
-      desc.includes('waitrose') || desc.includes('co-op') || desc.includes('iceland') ||
-      desc.includes('marks') || desc.includes('spencer') || desc.includes('grocery') ||
-      desc.includes('food') || desc.includes('supermarket')) {
+  if (searchText.includes('tesco') || searchText.includes('sainsbury') || searchText.includes('asda') ||
+      searchText.includes('morrisons') || searchText.includes('aldi') || searchText.includes('lidl') ||
+      searchText.includes('waitrose') || searchText.includes('co-op') || searchText.includes('iceland') ||
+      searchText.includes('marks') || searchText.includes('spencer') || searchText.includes('grocery') ||
+      searchText.includes('food') || searchText.includes('supermarket')) {
     console.log('[Categorization] -> Food & Groceries');
     return 'Food & Groceries';
   }
   
   // Entertainment & Dining 🍽️
-  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('amazon prime') ||
-      desc.includes('prime') || desc.includes('restaurant') || desc.includes('pub') || 
-      desc.includes('cinema') || desc.includes('deliveroo') || desc.includes('just eat') || 
-      desc.includes('uber eats') || desc.includes('gaming') || desc.includes('broadway')) {
+  if (searchText.includes('netflix') || searchText.includes('spotify') || searchText.includes('amazon prime') ||
+      searchText.includes('prime') || searchText.includes('restaurant') || searchText.includes('pub') || 
+      searchText.includes('cinema') || searchText.includes('deliveroo') || searchText.includes('just eat') || 
+      searchText.includes('uber eats') || searchText.includes('gaming') || searchText.includes('broadway')) {
     console.log('[Categorization] -> Entertainment & Dining');
     return 'Entertainment & Dining';
   }
   
   // Transportation 🚗
-  if (desc.includes('uber') || desc.includes('taxi') || desc.includes('bus') ||
-      desc.includes('train') || desc.includes('tube') || desc.includes('oyster') ||
-      desc.includes('tfl') || desc.includes('petrol') || desc.includes('bp') ||
-      desc.includes('shell') || desc.includes('esso')) {
+  if (searchText.includes('uber') || searchText.includes('taxi') || searchText.includes('bus') ||
+      searchText.includes('train') || searchText.includes('tube') || searchText.includes('oyster') ||
+      searchText.includes('tfl') || searchText.includes('petrol') || searchText.includes('bp') ||
+      searchText.includes('shell') || searchText.includes('esso')) {
     console.log('[Categorization] -> Transportation');
     return 'Transportation';
   }
   
   // Shopping & Retail 🛍️
-  if (desc.includes('amazon') || desc.includes('ebay') || desc.includes('argos') ||
-      desc.includes('john lewis') || desc.includes('next') || desc.includes('zara') ||
-      desc.includes('h&m') || desc.includes('primark') || desc.includes('boots') ||
-      desc.includes('shopping') || desc.includes('retail')) {
+  if (searchText.includes('amazon') || searchText.includes('ebay') || searchText.includes('argos') ||
+      searchText.includes('john lewis') || searchText.includes('next') || searchText.includes('zara') ||
+      searchText.includes('h&m') || searchText.includes('primark') || searchText.includes('boots') ||
+      searchText.includes('shopping') || searchText.includes('retail')) {
     console.log('[Categorization] -> Shopping & Retail');
     return 'Shopping & Retail';
   }
@@ -300,6 +304,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
           console.log('[PieChart] Processing transaction:', {
             description: transaction.description,
             amount: transaction.amount,
+            merchant_name: transaction.merchant_name,
             category: transaction.transaction_category
           });
         }

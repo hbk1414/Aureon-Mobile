@@ -83,20 +83,21 @@ export default function CompactAIAgent() {
 
   return (
     <View style={styles.container}>
-      {/* Chat Panel (slides in from right) */}
-      <Animated.View
-        style={[
-          styles.chatPanel,
-          {
-            transform: [{
-              translateX: slideAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: [320, 0], // Slide from 320px to 0
-              }),
-            }],
-          },
-        ]}
-      >
+      {/* Chat Panel (slides in from right) - only render when expanded */}
+      {isExpanded && (
+        <Animated.View
+          style={[
+            styles.chatPanel,
+            {
+              transform: [{
+                translateX: slideAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [320, 0], // Slide from 320px to 0
+                }),
+              }],
+            },
+          ]}
+        >
         {/* Header */}
         <View style={styles.chatHeader}>
           <Text style={styles.chatTitle}>AI Assistant</Text>
@@ -143,6 +144,7 @@ export default function CompactAIAgent() {
           </TouchableOpacity>
         </View>
       </Animated.View>
+      )}
 
       {/* Arrow Button */}
       <TouchableOpacity 
