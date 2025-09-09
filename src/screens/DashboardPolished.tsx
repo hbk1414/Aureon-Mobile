@@ -77,11 +77,15 @@ const categorizeTransaction = (transaction: any): string => {
   const desc = transaction.description?.toLowerCase() || '';
   const category = transaction.transaction_category;
   
+  console.log('[Categorization] Processing:', desc, 'Category:', category);
+  
   // Housing & Bills 🏠
-  if (desc.includes('rent') || desc.includes('mortgage') || desc.includes('council tax') ||
-      desc.includes('gas') || desc.includes('electric') || desc.includes('water') ||
-      desc.includes('internet') || desc.includes('broadband') || desc.includes('phone') ||
+  if (desc.includes('dvla') || desc.includes('licence') || desc.includes('rent') || 
+      desc.includes('mortgage') || desc.includes('council') || desc.includes('gas') || 
+      desc.includes('electric') || desc.includes('water') || desc.includes('internet') || 
+      desc.includes('broadband') || desc.includes('phone') || desc.includes('bill') ||
       category === 'BILL_PAYMENT' || category === 'DIRECT_DEBIT') {
+    console.log('[Categorization] -> Housing & Bills');
     return 'Housing & Bills';
   }
   
@@ -89,32 +93,40 @@ const categorizeTransaction = (transaction: any): string => {
   if (desc.includes('tesco') || desc.includes('sainsbury') || desc.includes('asda') ||
       desc.includes('morrisons') || desc.includes('aldi') || desc.includes('lidl') ||
       desc.includes('waitrose') || desc.includes('co-op') || desc.includes('iceland') ||
-      desc.includes('marks spencer') || desc.includes('m&s') || category === 'PURCHASE') {
+      desc.includes('marks') || desc.includes('spencer') || desc.includes('grocery') ||
+      desc.includes('food') || desc.includes('supermarket')) {
+    console.log('[Categorization] -> Food & Groceries');
     return 'Food & Groceries';
+  }
+  
+  // Entertainment & Dining 🍽️
+  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('amazon prime') ||
+      desc.includes('prime') || desc.includes('restaurant') || desc.includes('pub') || 
+      desc.includes('cinema') || desc.includes('deliveroo') || desc.includes('just eat') || 
+      desc.includes('uber eats') || desc.includes('gaming') || desc.includes('broadway')) {
+    console.log('[Categorization] -> Entertainment & Dining');
+    return 'Entertainment & Dining';
   }
   
   // Transportation 🚗
   if (desc.includes('uber') || desc.includes('taxi') || desc.includes('bus') ||
       desc.includes('train') || desc.includes('tube') || desc.includes('oyster') ||
       desc.includes('tfl') || desc.includes('petrol') || desc.includes('bp') ||
-      desc.includes('shell') || desc.includes('esso') || desc.includes('dvla')) {
+      desc.includes('shell') || desc.includes('esso')) {
+    console.log('[Categorization] -> Transportation');
     return 'Transportation';
-  }
-  
-  // Entertainment & Dining 🍽️
-  if (desc.includes('netflix') || desc.includes('spotify') || desc.includes('amazon prime') ||
-      desc.includes('restaurant') || desc.includes('pub') || desc.includes('cinema') ||
-      desc.includes('deliveroo') || desc.includes('just eat') || desc.includes('uber eats')) {
-    return 'Entertainment & Dining';
   }
   
   // Shopping & Retail 🛍️
   if (desc.includes('amazon') || desc.includes('ebay') || desc.includes('argos') ||
       desc.includes('john lewis') || desc.includes('next') || desc.includes('zara') ||
-      desc.includes('h&m') || desc.includes('primark') || desc.includes('boots')) {
+      desc.includes('h&m') || desc.includes('primark') || desc.includes('boots') ||
+      desc.includes('shopping') || desc.includes('retail')) {
+    console.log('[Categorization] -> Shopping & Retail');
     return 'Shopping & Retail';
   }
   
+  console.log('[Categorization] -> Other');
   return 'Other';
 };
 
@@ -319,9 +331,12 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     );
   }
 
+  console.log('[PieChart] Rendering with total:', total, 'categories:', categoryData.length);
+
   return (
     <Card>
       <Section title="Top Categories" />
+      <Text style={styles.sub}>Where your money went this month</Text>
       
       {/* Pie Chart */}
       <View style={styles.pieWrap}>
