@@ -294,7 +294,7 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     }
     
     // Log a few sample transactions to see the structure
-    console.log('[PieChart] Sample transactions:', transactions.slice(0, 3));
+    console.log('[PieChart] Sample transactions:', JSON.stringify(transactions.slice(0, 2), null, 2));
     
     const categoryTotals: Record<string, number> = {};
     
