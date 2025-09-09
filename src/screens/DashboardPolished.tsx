@@ -74,13 +74,14 @@ function greeting(now = new Date()) {
 
 /** ---------- UK-focused categorization ---------- */
 const categorizeTransaction = (transaction: any): string => {
-  const desc = transaction.description?.toLowerCase() || '';
-  const merchant = transaction.merchant_name?.toLowerCase() || '';
-  const searchText = `${desc} ${merchant}`.toLowerCase();
+  const name = transaction.name?.toLowerCase() || '';
+  const merchant = transaction.merchant?.toLowerCase() || '';
+  const searchText = `${name} ${merchant}`.toLowerCase();
   
   console.log('[Categorization] Processing:', { 
-    desc: desc.substring(0, 30), 
-    merchant: merchant.substring(0, 30) 
+    name: name.substring(0, 30), 
+    merchant: merchant.substring(0, 30),
+    searchText: searchText.substring(0, 40)
   });
   
   // Housing & Bills 🏠
@@ -305,10 +306,10 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
       if (transaction.amount < 0) { // Only count expenses
         if (index < 5) {
           console.log('[PieChart] Processing transaction:', {
-            description: transaction.description,
+            name: transaction.name,
             amount: transaction.amount,
-            merchant_name: transaction.merchant_name,
-            category: transaction.transaction_category
+            merchant: transaction.merchant,
+            category: transaction.category
           });
         }
         const category = categorizeTransaction(transaction);
