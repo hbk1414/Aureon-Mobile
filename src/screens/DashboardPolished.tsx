@@ -270,7 +270,12 @@ function CategoryRow({
 /** ---------- Top Categories with Pie Chart ---------- */
 function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
   const categoryData = React.useMemo(() => {
-    if (!transactions.length) return [];
+    console.log('[PieChart] Processing transactions:', transactions?.length || 0);
+    
+    if (!transactions?.length) {
+      console.log('[PieChart] No transactions available');
+      return [];
+    }
     
     const categoryTotals: Record<string, number> = {};
     
@@ -281,21 +286,26 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
       }
     });
     
+    console.log('[PieChart] Category totals:', categoryTotals);
+    
     // Convert to array and sort by amount
     const sorted = Object.entries(categoryTotals)
       .sort(([,a], [,b]) => b - a)
       .slice(0, 6); // Top 6 categories
     
+    console.log('[PieChart] Sorted categories:', sorted);
     return sorted;
   }, [transactions]);
 
   const pieData: Slice[] = React.useMemo(() => {
     const colors = [Apple.blue, Apple.violet, Apple.green, Apple.orange, Apple.pink, Apple.yellow];
-    return categoryData.map(([category, amount], index) => ({
+    const data = categoryData.map(([category, amount], index) => ({
       label: category,
       value: amount,
       color: colors[index] || Apple.purple,
     }));
+    console.log('[PieChart] Pie data:', data);
+    return data;
   }, [categoryData]);
 
   const total = categoryData.reduce((sum, [, amount]) => sum + amount, 0);
