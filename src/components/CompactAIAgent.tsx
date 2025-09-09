@@ -37,13 +37,116 @@ export default function CompactAIAgent() {
   console.log('[CompactAIAgent] Component starting to render...');
   
   const [isExpanded, setIsExpanded] = useState(false);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      text: "Hello! I'm your AI financial assistant. How can I help you today?",
+      isUser: false,
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputText, setInputText] = useState("");
+  const slideAnim = useRef(new Animated.Value(0)).current;
   
   console.log('[CompactAIAgent] Component rendered, isExpanded:', isExpanded);
 
-  // Simple test - just show the button
+  useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: isExpanded ? 1 : 0,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  }, [isExpanded]);
+
+  const handleSendMessage = () => {
+    if (!inputText.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText.trim(),
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputText("");
+
+    // Simple AI response
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "Thanks for your question! I'm analyzing your financial data and will provide insights based on your real transaction history.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiResponse]);
+    }, 1000);
+  };
 
   return (
     <View style={styles.container}>
+      {/* Chat Panel (slides in from right) */}
+      <Animated.View
+        style={[
+          styles.chatPanel,
+          {
+            transform: [{
+              translateX: slideAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [320, 0], // Slide from 320px to 0
+              }),
+            }],
+          },
+        ]}
+      >
+        {/* Header */}
+        <View style={styles.chatHeader}>
+          <Text style={styles.chatTitle}>AI Assistant</Text>
+          <TouchableOpacity
+            onPress={() => setIsExpanded(false)}
+            style={styles.closeButton}
+          >
+            <Text style={styles.closeText}>✕</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Messages */}
+        <ScrollView style={styles.messagesContainer}>
+          {messages.map((message) => (
+            <View
+              key={message.id}
+              style={[
+                styles.messageBubble,
+                message.isUser ? styles.userMessage : styles.aiMessage,
+              ]}
+            >
+              <Text style={[
+                styles.messageText,
+                message.isUser ? styles.userMessageText : styles.aiMessageText,
+              ]}>
+                {message.text}
+              </Text>
+            </View>
+          ))}
+        </ScrollView>
+
+        {/* Input */}
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.textInput}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Ask about your finances..."
+            multiline
+            onSubmitEditing={handleSendMessage}
+          />
+          <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton}>
+            <Text style={styles.sendText}>→</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+
+      {/* Arrow Button */}
       <TouchableOpacity 
         style={styles.arrowButton}
         onPress={() => {
@@ -77,8 +180,6 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 28,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2, // Add border for debugging
-    borderColor: 'red', // Make it very visible for debugging
     ...Platform.select({
       ios: {
         shadowColor: "#000",
@@ -102,11 +203,112 @@ const styles = StyleSheet.create({
   
   // Chat panel (expanded state)
   chatPanel: {
-    flex: 1,
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 320,
+    height: 400,
     backgroundColor: COLORS.card,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
     ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        shadowOffset: { width: -4, height: 0 },
+      },
+      android: { elevation: 6 },
+      web: { boxShadow: "-4px 0px 12px rgba(0,0,0,0.15)" },
+    }),
+  },
+  chatHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  chatTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+  closeButton: {
+    width: 24,
+    height: 24,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeText: {
+    fontSize: 14,
+    color: COLORS.mute,
+  },
+  messagesContainer: {
+    flex: 1,
+    padding: 16,
+  },
+  messageBubble: {
+    marginBottom: 12,
+    maxWidth: "80%",
+  },
+  userMessage: {
+    alignSelf: "flex-end",
+    backgroundColor: COLORS.blue,
+    borderRadius: 16,
+    borderBottomRightRadius: 4,
+    padding: 12,
+  },
+  aiMessage: {
+    alignSelf: "flex-start",
+    backgroundColor: COLORS.border,
+    borderRadius: 16,
+    borderBottomLeftRadius: 4,
+    padding: 12,
+  },
+  messageText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  userMessageText: {
+    color: "white",
+  },
+  aiMessageText: {
+    color: COLORS.text,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    alignItems: "flex-end",
+  },
+  textInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginRight: 8,
+    maxHeight: 80,
+    fontSize: 14,
+  },
+  sendButton: {
+    width: 36,
+    height: 36,
+    backgroundColor: COLORS.blue,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sendText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
       ios: {
         shadowColor: "#000",
         shadowOpacity: 0.1,

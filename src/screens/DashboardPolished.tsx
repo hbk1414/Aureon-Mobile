@@ -470,13 +470,6 @@ export default function DashboardPolished() {
           </View>
         </Card>
 
-        {/* Predictive cash flow */}
-        <PredictiveCashflow
-          today={2500}
-          weeks={[2200, 1800, 1500, 1200]}
-          day30={800}
-          threshold={1000}
-        />
 
         {/* Micro Insights Tips */}
         <MicroInsightsTips />
@@ -484,15 +477,6 @@ export default function DashboardPolished() {
         {/* Top Categories */}
         <TopCategoriesWithChart transactions={transactions || []} />
 
-        {/* Quick Actions */}
-        <Card>
-          <Section title="Quick Actions" />
-          <View style={styles.actionsRow}>
-            <QuickAction label={"Scan\nReceipt"} color={Apple.purple} />
-            <QuickAction label={"Add\nTransaction"} color={Apple.violet} />
-            <QuickAction label={"Set\nBudget"} color={Apple.blue} />
-          </View>
-        </Card>
 
         {/* AI Insights */}
         <Card>
