@@ -235,7 +235,7 @@ function PredictiveCashflow({
 /** ---------- Upcoming Transactions ---------- */
 function UpcomingTransactions() {
   const { upcomingBills, loading, error } = useUpcomingBills();
-  const [showBills, setShowBills] = React.useState(true);
+  const [showBills, setShowBills] = React.useState(false);
 
   if (loading) {
     return (
@@ -259,7 +259,10 @@ function UpcomingTransactions() {
     <Card>
       <Pressable
         style={styles.billsHeader}
-        onPress={() => setShowBills(!showBills)}
+        onPress={() => {
+          console.log('[UpcomingBills] Toggle pressed, current state:', showBills);
+          setShowBills(!showBills);
+        }}
       >
         <View>
           <Text style={styles.h2}>Upcoming Bills</Text>
