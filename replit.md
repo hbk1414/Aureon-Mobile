@@ -8,6 +8,8 @@ Aureon Mobile App is a modern AI-powered financial management application built 
 - **Performance Optimization**: Implemented pre-categorization of transactions to eliminate lag when clicking pie chart segments
 - **Upcoming Transactions**: Added upcoming bills component to main homepage using real TrueLayer data prediction based on recurring payments
 - **Enhanced UI**: Improved category breakdown with UK-focused spending categories (Food & Groceries, Housing & Bills, Transportation, etc.)
+- **Unified AI Insights**: Combined smart tips and AI insights components into a single comprehensive section
+- **Improved Dropdown**: Added collapsible dropdown functionality to upcoming bills section with smooth arrow rotation
 
 # User Preferences
 

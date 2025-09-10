@@ -306,11 +306,11 @@ function UpcomingTransactions() {
   );
 }
 
-/** ---------- Micro Insights Tips ---------- */
-function MicroInsightsTips() {
+/** ---------- Combined AI Insights ---------- */
+function CombinedAIInsights() {
   const { transactions } = useTransactions();
   
-  const insights = React.useMemo(() => {
+  const smartTips = React.useMemo(() => {
     if (!transactions || !transactions.length) return [];
     
     // Convert transactions to the format expected by insights engine
@@ -326,20 +326,49 @@ function MicroInsightsTips() {
     return generateMicroInsights(txns);
   }, [transactions]);
 
-  if (insights.length === 0) return null;
+  // Static AI insights
+  const aiInsights = [
+    {
+      icon: '💡',
+      text: 'Your entertainment spending is 15% higher than usual. Consider a weekly limit.',
+      color: Apple.yellow
+    },
+    {
+      icon: '🎯',
+      text: 'Great job! You\'re saving 25% more than your goal — ahead for your vacation fund.',
+      color: Apple.green
+    }
+  ];
 
   return (
     <Card>
-      <Text style={styles.h3}>💡 Smart Tips</Text>
-      <Text style={styles.sub}>Based on your spending patterns</Text>
+      <Text style={styles.h2}>AI Insights & Tips</Text>
+      <Text style={styles.sub}>Smart recommendations based on your spending patterns</Text>
       
       <View style={{ marginTop: S.md }}>
-        {insights.map((tip, index) => (
-          <View key={index} style={[styles.tipRow, index === insights.length - 1 && styles.tipRowLast]}>
-            <View style={[styles.tipDot, { backgroundColor: Apple.blue }]} />
-            <Text style={styles.tipText}>{tip}</Text>
+        {/* AI Insights */}
+        {aiInsights.map((insight, index) => (
+          <View key={`ai-${index}`} style={[styles.insight, { borderLeftColor: insight.color }]}>
+            <Text style={styles.insightText}>
+              {insight.icon} {insight.text}
+            </Text>
           </View>
         ))}
+        
+        {/* Smart Tips */}
+        {smartTips.length > 0 && (
+          <View style={{ marginTop: S.lg }}>
+            <Text style={styles.h3}>Smart Tips</Text>
+            <View style={{ marginTop: S.sm }}>
+              {smartTips.map((tip, index) => (
+                <View key={`tip-${index}`} style={[styles.tipRow, index === smartTips.length - 1 && styles.tipRowLast]}>
+                  <View style={[styles.tipDot, { backgroundColor: Apple.blue }]} />
+                  <Text style={styles.tipText}>{tip}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
     </Card>
   );
@@ -631,27 +660,11 @@ export default function DashboardPolished() {
         {/* Upcoming Transactions */}
         <UpcomingTransactions />
 
-        {/* Micro Insights Tips */}
-        <MicroInsightsTips />
+        {/* Combined AI Insights & Smart Tips */}
+        <CombinedAIInsights />
 
         {/* Top Categories */}
         <TopCategoriesWithChart transactions={transactions || []} />
-
-
-        {/* AI Insights */}
-        <Card>
-          <Section title="AI Insights" />
-          <View style={[styles.insight, { borderLeftColor: Apple.yellow }]}>
-            <Text style={styles.insightText}>
-              💡 Your entertainment spending is 15% higher than usual. Consider a weekly limit.
-            </Text>
-          </View>
-          <View style={[styles.insight, { borderLeftColor: Apple.green }]}>
-            <Text style={styles.insightText}>
-              🎯 Great job! You're saving 25% more than your goal — ahead for your vacation fund.
-            </Text>
-          </View>
-        </Card>
 
         {/* Budget Overview */}
         <Card>
