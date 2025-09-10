@@ -9,7 +9,7 @@ import {
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useTransactions, useCurrentBalance, formatCurrency } from "../services/dataService";
+import { useTransactions, useCurrentBalance, formatCurrency, useUpcomingBills } from "../services/dataService";
 import { generateMicroInsights } from "../ai/insights";
 import CompactAIAgent from "../components/CompactAIAgent";
 import TouchablePieChart, { Slice } from "../../components/TouchablePieChart";
@@ -232,6 +232,62 @@ function PredictiveCashflow({
   );
 }
 
+/** ---------- Upcoming Transactions ---------- */
+function UpcomingTransactions() {
+  const { upcomingBills, loading, error } = useUpcomingBills();
+
+  if (loading) {
+    return (
+      <Card>
+        <Text style={styles.h2}>Upcoming Bills</Text>
+        <Text style={styles.sub}>Loading your scheduled payments...</Text>
+      </Card>
+    );
+  }
+
+  if (error || upcomingBills.length === 0) {
+    return (
+      <Card>
+        <Text style={styles.h2}>Upcoming Bills</Text>
+        <Text style={styles.sub}>No scheduled payments found</Text>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Text style={styles.h2}>Upcoming Bills</Text>
+      <Text style={styles.sub}>Based on your recurring payments</Text>
+      
+      <View style={{ marginTop: S.md }}>
+        {upcomingBills.slice(0, 4).map((bill, index) => {
+          const billDate = new Date(bill.date);
+          const today = new Date();
+          const diffTime = billDate.getTime() - today.getTime();
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          
+          let dueDateText = '';
+          if (diffDays === 0) dueDateText = 'Today';
+          else if (diffDays === 1) dueDateText = 'Tomorrow';
+          else if (diffDays > 1 && diffDays <= 7) dueDateText = `In ${diffDays} days`;
+          else dueDateText = billDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+
+          return (
+            <View key={bill.id} style={[styles.upcomingBillRow, index === upcomingBills.length - 1 && { marginBottom: 0 }]}>
+              <View style={[styles.billIcon, { backgroundColor: Apple.orange }]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.billName}>{bill.label}</Text>
+                <Text style={styles.billMeta}>{dueDateText} • {bill.category}</Text>
+              </View>
+              <Text style={styles.billAmount}>-{formatCurrency(bill.amount)}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </Card>
+  );
+}
+
 /** ---------- Micro Insights Tips ---------- */
 function MicroInsightsTips() {
   const { transactions } = useTransactions();
@@ -287,6 +343,15 @@ function CategoryRow({
 /** ---------- Top Categories with Pie Chart ---------- */
 function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
   const [selectedSegment, setSelectedSegment] = React.useState<number | null>(null);
+  
+  // Pre-categorize all transactions once for better performance
+  const categorizedTransactions = React.useMemo(() => {
+    return transactions.map(tx => ({
+      ...tx,
+      categoryLabel: categorizeTransaction(tx)
+    }));
+  }, [transactions]);
+
   const categoryData = React.useMemo(() => {
     console.log('[PieChart] Processing transactions:', transactions?.length || 0);
     
@@ -340,13 +405,6 @@ function TopCategoriesWithChart({ transactions }: { transactions: any[] }) {
     return data;
   }, [categoryData]);
 
-  // Pre-categorize all transactions once for better performance
-  const categorizedTransactions = React.useMemo(() => {
-    return transactions.map(tx => ({
-      ...tx,
-      categoryLabel: categorizeTransaction(tx)
-    }));
-  }, [transactions]);
 
   const selectedSlice = selectedSegment != null ? pieData[selectedSegment] : null;
   const selectedTransactions = React.useMemo(() => {
@@ -551,6 +609,9 @@ export default function DashboardPolished() {
           </View>
         </Card>
 
+
+        {/* Upcoming Transactions */}
+        <UpcomingTransactions />
 
         {/* Micro Insights Tips */}
         <MicroInsightsTips />
@@ -939,6 +1000,35 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: N.border,
     marginHorizontal: 4,
+  },
+  
+  // Upcoming Bills Styles
+  upcomingBillRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    marginBottom: 8,
+  },
+  billIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 12,
+  },
+  billName: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: N.text,
+  },
+  billMeta: {
+    fontSize: 14,
+    color: N.muted,
+    marginTop: 2,
+  },
+  billAmount: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Apple.red,
   },
 });
 
