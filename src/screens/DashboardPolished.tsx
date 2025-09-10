@@ -235,6 +235,7 @@ function PredictiveCashflow({
 /** ---------- Upcoming Transactions ---------- */
 function UpcomingTransactions() {
   const { upcomingBills, loading, error } = useUpcomingBills();
+  const [showBills, setShowBills] = React.useState(true);
 
   if (loading) {
     return (
@@ -256,34 +257,51 @@ function UpcomingTransactions() {
 
   return (
     <Card>
-      <Text style={styles.h2}>Upcoming Bills</Text>
-      <Text style={styles.sub}>Based on your recurring payments</Text>
+      <Pressable
+        style={styles.billsHeader}
+        onPress={() => setShowBills(!showBills)}
+      >
+        <View>
+          <Text style={styles.h2}>Upcoming Bills</Text>
+          <Text style={styles.sub}>
+            {upcomingBills.length} bill{upcomingBills.length !== 1 ? 's' : ''} • Next: {formatCurrency(upcomingBills[0]?.amount || 0)}
+          </Text>
+        </View>
+        <Text style={[
+          styles.billsChevron,
+          { transform: [{ rotate: showBills ? '90deg' : '0deg' }] }
+        ]}>
+          ›
+        </Text>
+      </Pressable>
       
-      <View style={{ marginTop: S.md }}>
-        {upcomingBills.slice(0, 4).map((bill, index) => {
-          const billDate = new Date(bill.date);
-          const today = new Date();
-          const diffTime = billDate.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          
-          let dueDateText = '';
-          if (diffDays === 0) dueDateText = 'Today';
-          else if (diffDays === 1) dueDateText = 'Tomorrow';
-          else if (diffDays > 1 && diffDays <= 7) dueDateText = `In ${diffDays} days`;
-          else dueDateText = billDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
+      {showBills && (
+        <View style={{ marginTop: S.md }}>
+          {upcomingBills.slice(0, 4).map((bill, index) => {
+            const billDate = new Date(bill.date);
+            const today = new Date();
+            const diffTime = billDate.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            let dueDateText = '';
+            if (diffDays === 0) dueDateText = 'Today';
+            else if (diffDays === 1) dueDateText = 'Tomorrow';
+            else if (diffDays > 1 && diffDays <= 7) dueDateText = `In ${diffDays} days`;
+            else dueDateText = billDate.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
 
-          return (
-            <View key={bill.id} style={[styles.upcomingBillRow, index === upcomingBills.length - 1 && { marginBottom: 0 }]}>
-              <View style={[styles.billIcon, { backgroundColor: Apple.orange }]} />
-              <View style={{ flex: 1 }}>
-                <Text style={styles.billName}>{bill.label}</Text>
-                <Text style={styles.billMeta}>{dueDateText} • {bill.category}</Text>
+            return (
+              <View key={bill.id} style={[styles.upcomingBillRow, index === upcomingBills.length - 1 && { marginBottom: 0 }]}>
+                <View style={[styles.billIcon, { backgroundColor: Apple.orange }]} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.billName}>{bill.label}</Text>
+                  <Text style={styles.billMeta}>{dueDateText} • {bill.category}</Text>
+                </View>
+                <Text style={styles.billAmount}>{formatCurrency(bill.amount)}</Text>
               </View>
-              <Text style={styles.billAmount}>-{formatCurrency(bill.amount)}</Text>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      )}
     </Card>
   );
 }
@@ -1028,7 +1046,20 @@ const styles = StyleSheet.create({
   billAmount: {
     fontSize: 16,
     fontWeight: "700",
-    color: Apple.red,
+    color: N.text,
+  },
+  
+  // Bills header styles
+  billsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  billsChevron: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: N.muted,
+    marginLeft: 8,
   },
 });
 
