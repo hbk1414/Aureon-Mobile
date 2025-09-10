@@ -259,10 +259,7 @@ function UpcomingTransactions() {
     <Card>
       <Pressable
         style={styles.billsHeader}
-        onPress={() => {
-          console.log('[UpcomingBills] Toggle pressed, current state:', showBills);
-          setShowBills(!showBills);
-        }}
+        onPress={() => setShowBills(!showBills)}
       >
         <View>
           <Text style={styles.h2}>Upcoming Bills</Text>
