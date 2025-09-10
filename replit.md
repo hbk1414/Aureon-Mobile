@@ -2,6 +2,13 @@
 
 Aureon Mobile App is a modern AI-powered financial management application built with React Native and Expo. The app provides comprehensive financial tracking, budgeting, AI-powered insights, and banking integration capabilities. It focuses on delivering a polished user experience with real-time data synchronization, predictive analytics, and smart financial recommendations to help users manage their money effectively.
 
+## Recent Changes (September 10, 2025)
+
+- **Interactive Pie Chart**: Added clickable pie chart segments with transaction details dropdown for spending categories
+- **Performance Optimization**: Implemented pre-categorization of transactions to eliminate lag when clicking pie chart segments
+- **Upcoming Transactions**: Added upcoming bills component to main homepage using real TrueLayer data prediction based on recurring payments
+- **Enhanced UI**: Improved category breakdown with UK-focused spending categories (Food & Groceries, Housing & Bills, Transportation, etc.)
+
 # User Preferences
 
 Preferred communication style: Simple, everyday language.
